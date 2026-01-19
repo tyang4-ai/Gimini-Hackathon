@@ -27,6 +27,32 @@ This file contains instructions for Claude when working on the Gemini 3 Hackatho
 
 ---
 
+## GitHub Updates
+
+**IMPORTANT: After making code changes, remind the user to push to GitHub.**
+
+**Repository:** https://github.com/tyang4-ai/Gimini-Hackathon
+
+**After significant code changes:**
+1. Update SESSION.md with changes made
+2. Commit with descriptive message (NO "Co-Authored-By" lines)
+3. Push to origin main
+
+**Commands:**
+```bash
+cd "C:\Users\22317\Documents\Coding\Hackathon Stuff\Gemini Hackathon"
+git add .
+git commit -m "Description of changes"
+git push origin main
+```
+
+**Never commit:**
+- `.env.local` or any `.env*` files (API keys)
+- `.claude/` folder
+- `node_modules/`
+
+---
+
 ## Session Context Management
 
 ### SESSION.md Setup
