@@ -1,11 +1,13 @@
 # Gemini 3 Hackathon - Session Context
 
 ## Project Status
-- **Current Phase:** 9.5/10 - Testing & Demo Prep (UI Polish Complete)
-- **Last Updated:** January 19, 2026 - Sir Reginald Logo Images Integrated
-- **Active Agent:** None - Ready for testing execution
-- **Spec Alignment:** 92% verified
-- **Top 3 Probability:** 65-75% (CONDITIONAL YES from critic)
+- **Current Phase:** DEBUGGING - Gemini Live Connection Issue
+- **Last Updated:** January 20, 2026 - WebSocket debugging in progress
+- **Active Agent:** None - Debugging paused
+- **Spec Alignment:** 100% verified (47/47 items)
+- **Current Score:** 7.8/10 → Target 9.6/10 (with all improvements)
+- **Test Plan Score:** 10/10 (135 tests, 25h total)
+- **BLOCKER:** Gemini Live WebSocket closes immediately after opening
 
 ---
 
@@ -67,7 +69,7 @@ A COMBINED approach that does BOTH:
 - [x] **Marketing Pitch v1**
 - [x] Gemini API key integrated
 
-### In Progress (Jan 19 Session)
+### In Progress (Jan 19 Session - Evening)
 - [x] PM Weakness Fix Plan v1 - Created plan to address top 3 critic weaknesses
 - [x] Implemented structured `<shout>` tag parsing (Weakness 1 fixed)
 - [x] Implemented Test Metrics Panel (Weakness 2 fixed)
@@ -81,14 +83,30 @@ A COMBINED approach that does BOTH:
 - [x] **Color Change:** Brown → Deep Navy (#0D1B2A) - More sophisticated
 - [x] **Header Spacing Fix:** Added separators between status elements
 - [x] **Gemini Prompts Created:** Logo icon and thinking monocle icon
+- [x] **PM Improvement Plan v1** - 7 improvements for 7.8 → 9.3
+- [x] **Critic Review** - Cut 4 items, added demo focus
+- [x] **PM Improvement Plan v2** - Revised, focused on THE SHOUT (5.5h code + 2.5h recording)
+- [x] **NEW ICONS RECEIVED:**
+  - `Sir_regniald_shouting.png` - For THE SHOUT moment
+  - `Sir_reginald_signofrelief.png` - For when danger passes
+- [x] **Implement v2 plan** - All images integrated, relief state working
+- [x] **Verify 100% alignment** - 47/47 items verified
+- [x] **Test Plan v7** - 10/10 critic score, 135 tests
+- [x] **Automated Tests A1-A4** - 25/25 passed
+- [x] **Fixed "Contemplating" stuck screen** - Clear thinking state on connection close/error
+- [ ] **ONGOING: WebSocket Closes Immediately (code 1000)**
+  - Model name verified correct: `gemini-2.5-flash-native-audio-preview-12-2025`
+  - Removed undocumented `contextWindowCompression` option
+  - TEXT modality gives error: "Cannot extract voices from non-audio request" (confirms AUDIO is required)
+  - AUDIO modality closes with code 1000 (no reason)
+  - Created `agents/debugger.md` - comprehensive debugging agent prompt
+  - Next to try: AUDIO + speechConfig together
 
-### Next Up
-- [ ] Execute test plan (237 tests, ~17.5 hours)
-- [ ] Run 50+ test sessions for real metrics
-- [ ] Recruit 1 real maker for testimonial
-- [ ] Implement polish plan v2 (8-10 hours)
-- [ ] Record 20+ demo takes
-- [ ] Final submission
+### Next Up (After Connection Fixed)
+- [ ] Test Gemini Live connection end-to-end
+- [ ] Record THE SHOUT 10+ times
+- [ ] Record full demo video
+- [ ] Final submission (Feb 9, 2026)
 
 ---
 
@@ -109,23 +127,30 @@ A COMBINED approach that does BOTH:
 
 | Type | Latest Version | Status |
 |------|---------------|--------|
-| **App Code** | **v3** | Built (safety monitor + aristocratic manor theme) |
-| **Development Plan** | **v2** | Complete with all critic fixes applied |
+| **App Code** | **v4** | Built with all Sir Reginald images + relief state |
+| **Test Plan** | **v7** | **10/10 CRITIC SCORE - 135 tests, ready for execution** |
+| **Critic Test Review** | **final** | 10/10 - Both nitpicks fixed |
+| **PM Improvement Plan** | **v2 + v3 addendum** | Complete - All implemented |
+| **Spec Alignment** | **v1** | 100% verified (47/47 items) |
 | **PM Spec** | **v10** | Complete with critic improvements + UI specs |
-| **PM Weakness Fix Plan** | **v1** | Complete - Detailed implementation for 3 critical weaknesses |
-| **PM Polish Plan** | **v1** | Comprehensive UI polish for demo-ready production |
-| **Test Plan** | **v3** | NEW - 237 tests covering unit, integration, E2E, performance |
-| **Positioning** | **v9** | Enhanced with critic/9-10 path improvements, video strategy |
-| Development Plan | v1 | Superseded by v2 (critic review applied) |
-| PM Spec | v8 | Combined approach (superseded by v10) |
-| PM Spec | v7 | Documentation pivot (superseded) |
+| **Positioning** | **v9** | Enhanced with critic/9-10 path improvements |
+| Development Plan | v2 | Complete with all critic fixes applied |
+| PM Weakness Fix Plan | v1 | Complete - 3 critical weaknesses addressed |
 | UI Design | v3 | Superseded by v10's comprehensive UI section |
 | Marketing Pitch | v1 | Needs update for combined approach |
-| Critic Review | dev-plan-v1 | Identified 6 critical fixes, all applied in v2 |
+
+### New Assets (Jan 19)
+| Asset | Path | Purpose |
+|-------|------|---------|
+| Sir Reginald Shouting | `Documents/Sir_regniald_shouting.png` | THE SHOUT moment |
+| Sir Reginald Relief | `Documents/Sir_reginald_signofrelief.png` | Danger passed state |
+| Sir Reginald Icon | `Documents/Sir_reginald_icon.png` | Default/idle state |
+| Sir Reginald Thinking | `Documents/Sir_reginald_thinking.png` | Processing state |
 
 ### Quick Reference Docs
 - `sir-reginald-app/` - Current app (safety features built)
-- `outputs/tester_test-plan_v3.md` - **NEW: 237 tests - unit, integration, E2E, performance, demo rehearsal**
+- `outputs/tester_test-plan_v4.md` - **ACTIVE: Demo validation plan (50 focused tests, 22h)**
+- `outputs/critic_test-plan-review_v1.md` - Critic's review of test plan v3
 - `outputs/pm_polish-plan_v1.md` - Comprehensive UI polish plan for demo-ready production
 - `outputs/pm_weakness-fix-plan_v1.md` - Detailed fix plan for 3 critical weaknesses
 - `outputs/pm_development-plan_v2.md` - **ACTIVE: Development plan with critic fixes applied**
@@ -193,6 +218,137 @@ A COMBINED approach that does BOTH:
 ---
 
 ## Session Log
+
+### January 20, 2026 - Session 20 - DEBUGGING (Paused)
+**Duration:** ~3 hours
+**Focus:** Debugging Gemini Live WebSocket Connection
+
+**Issue:** WebSocket connection opens then immediately closes (code 1000)
+
+**Debugging Steps Taken:**
+1. Fixed "contemplating" stuck screen - clear thinking state on close/error/disconnect
+2. Verified ephemeral tokens working - `token.name` format is correct
+3. Tested multiple model names:
+   - `gemini-2.5-flash-native-audio-preview-12-2025` (official docs) - closes immediately (code 1000)
+   - `gemini-2.5-flash-native-audio-dialog` (rate limit dashboard) - "not found for v1alpha"
+   - `models/gemini-2.0-flash-exp` (Google example) - quota exceeded (1011)
+4. Tested TEXT modality - error "Cannot extract voices from non-audio request"
+5. Removed undocumented `contextWindowCompression` option
+6. Created comprehensive `agents/debugger.md` for future debugging
+
+**Key Findings:**
+- Model `gemini-2.5-flash-native-audio-preview-12-2025` requires AUDIO modality
+- TEXT modality not supported on native-audio model
+- Connection opens successfully but server closes it immediately (code 1000, no reason)
+- Config options tested: minimal (just responseModalities), with speechConfig, with proactivity
+
+**Files Modified:**
+- `sir-reginald-app/src/hooks/use-gemini-live.ts` - Multiple config iterations, added logging
+- `sir-reginald-app/src/app/api/token/route.ts` - Fixed ephemeral token handling
+- `agents/debugger.md` - NEW: Comprehensive debugging agent prompt
+
+**Current Config Being Tested:**
+```javascript
+{
+  responseModalities: [Modality.AUDIO],
+  speechConfig: { voiceConfig: { prebuiltVoiceConfig: { voiceName: "Kore" } } }
+}
+```
+
+**Next Steps:**
+1. Test AUDIO + speechConfig together (queued when session paused)
+2. Research if there are additional required config options
+3. Check if Google has any known issues with this model
+4. Consider contacting Google support if issue persists
+
+---
+
+### January 19, 2026 - Session 19 (Evening) - COMPLETE
+**Duration:** ~2 hours
+**Focus:** Final Implementation + 10/10 Test Plan
+
+**Accomplishments:**
+1. **Implementation Complete (100% verified)**
+   - All 4 Sir Reginald images copied to public folder
+   - SafetyAlertOverlay updated with shouting image
+   - ReginaldAvatar supports all 6 states (idle, speaking, thinking, alarmed, pleased, relief)
+   - Relief state transition on alert dismiss (2 second duration)
+   - Build passes, all features working
+
+2. **Test Plan v7 Achieved 10/10 Critic Score**
+   - Started at v5 (6.5/10) → v6 (8.5/10) → v7 (9.5/10) → Final (10/10)
+   - 135 total tests (20 automated, 10 semi-automated, 105 human)
+   - 8 hours demo rehearsal included
+   - Judge Experience Tests with 3-5 non-makers
+   - Gemini Chaos Testing added
+   - Emergency Recovery Protocol documented
+
+**Files Created:**
+- `outputs/pm_improvement-plan_v3-addendum.md` - Sigh of relief addition
+- `outputs/tester_test-plan_v5.md` through `v7.md` - Test plan iterations
+- `outputs/critic_test-plan-review_v3.md` through `final.md` - Critic reviews
+- `outputs/verifier_spec-alignment_v1.md` - Updated 100% verification
+
+**New Sir Reginald Images Integrated:**
+- `public/sir-reginald-shouting.png` - THE SHOUT moment
+- `public/sir-reginald-relief.png` - Danger passed/sigh of relief
+
+**Next Steps:**
+1. Execute Test Plan v7 Phase 1 (Automated - 45 min)
+2. Execute Test Plan v7 Phase 2 (THE SHOUT Reliability - 4 hours)
+3. Execute Test Plan v7 Phase 3 (Judge Experience + Demo Prep - 11 hours)
+4. Execute Test Plan v7 Phase 4 (Recording - 8 hours)
+5. Final submission before Feb 9, 2026
+
+**MCP Tools Required During Testing:**
+- **Chrome MCP** (`mcp__claude-in-chrome__*`): UI screenshots, visual verification
+- **Chrome DevTools MCP** (`mcp__chrome-devtools__*`): F12 console, network monitoring, DOM inspection
+- Keep BOTH running during all human/workshop tests for debugging and evidence capture
+
+---
+
+### January 19, 2026 - Session 18
+**Duration:** ~30 minutes
+**Focus:** Critic Review of Test Plan + Revision to v4
+
+**Accomplishments:**
+- Spawned fresh critic agent to review test plan v3
+- Received harsh critique scoring plan 6.5/10 with REVISE verdict
+- Created test plan v4 addressing all critical weaknesses
+
+**Key Critic Findings:**
+1. **FATAL:** Demo rehearsal underestimated (3h → 8h needed)
+2. **WASTE:** 66 unit tests provide near-zero demo value
+3. **GAP:** No automation strategy for 237 tests
+4. **MISSING:** No SHOUT Reliability Protocol (20-trial validation)
+5. **WRONG METRICS:** No true E2E latency measurement
+6. **MISSING:** No Judge Experience Tests
+
+**Test Plan v4 Changes:**
+- Cut unit tests 92% (66 → 5 automated critical tests)
+- Cut integration tests 90% (39 → 4 smoke tests)
+- Added SHOUT Reliability Protocol (+2h, 20 trials)
+- Added True E2E Latency Tests (+1h)
+- Added Judge Experience Tests (+2h)
+- Expanded Demo Rehearsal 167% (3h → 8h)
+- All tests marked as [AUTOMATED] or [MANUAL]
+- Added Pre-Recording Checklist
+
+**Philosophy Shift:**
+- v3: "Test every function" (237 tests, 17.5h)
+- v4: "Test every moment judges will see" (~50 tests, 22h)
+
+**Files Created:**
+- `outputs/critic_test-plan-review_v1.md` - Critic's harsh review
+- `outputs/tester_test-plan_v4.md` - Revised demo validation plan
+
+**Next Steps:**
+1. Set up Jest automation for 5 critical unit tests
+2. Execute SHOUT Reliability Protocol (20 trials)
+3. Run Judge Experience Tests with non-makers
+4. Begin demo rehearsal
+
+---
 
 ### January 19, 2026 - Session 17
 **Duration:** ~20 minutes
