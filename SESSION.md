@@ -33,10 +33,10 @@ Infinite Craft meets infinite depth. Combine anything, zoom into everything.
 | APIs | Gemini Flash, Nano Banana, Veo 3.1 |
 
 ### Current Focus
-Finalizing development plan and architecture via PM → Critic pipeline
+**Day 0: API Validation** - Must validate all APIs before writing game code
 
 ### Blockers
-- None
+- None (planning complete, ready to build)
 
 ---
 
@@ -174,6 +174,7 @@ Gemini Hackathon/
 - PM revised to v5 with AI-assisted dev reality
 - Critic reviewed v5: BUILD (7.5/10, 50-55% win prob)
 - All 10 critic concerns addressed
+- GitHub updated and pushed
 
 **Key Changes (v4 → v5):**
 - Evolution demoted P1 → P2 (Veo unreliable)
@@ -186,10 +187,15 @@ Gemini Hackathon/
 **Final Spec:** `pm_product-spec_omnigenesis_v5.md`
 **Final Review:** `critic_omnigenesis-review_v4.md`
 
-**Next:**
-- Day 0: Validate all APIs (Flash, Imagen, Veo)
-- Pre-generate 12 primordial images
-- GO/NO-GO decision before any game code
+**STATUS: PLANNING COMPLETE - READY FOR DAY 0**
+
+**Next Session:**
+1. Day 0: Create API validation scripts
+2. Test Gemini Flash (50 calls, p95 < 1.5s)
+3. Test Imagen 3 (30 images, p95 < 2s)
+4. Check Veo 3.1 access (if denied → cut Evolution)
+5. Pre-generate 12 primordial images
+6. GO/NO-GO decision before any game code
 
 ---
 
