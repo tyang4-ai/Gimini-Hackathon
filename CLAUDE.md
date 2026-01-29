@@ -25,6 +25,7 @@ This file contains instructions for Claude when working on the Gemini 3 Hackatho
 
 **When in doubt, ASK before proceeding with major decisions.**
 
+**Make full use of the questions feature and ask the user preference questions**
 ---
 
 ## GitHub Updates
@@ -162,7 +163,7 @@ This ensures continuity across sessions and prevents losing context.
 
 ## Output Naming Convention
 
-All agent outputs go in `outputs/` folder with this naming:
+All agent outputs go in `utilities/outputs/` folder with this naming:
 
 ```
 {agent}_{task}_{version}.md
@@ -183,50 +184,22 @@ All agent outputs go in `outputs/` folder with this naming:
 
 ---
 
-## Agent Workflow
-
-Run agents in this order:
-
-```
-1. Market Researcher → researcher_market-analysis_v1.md
-      ↓
-2. Product Manager → pm_product-spec_v1.md
-      ↓
-3. Critic → critic_review_v1.md
-      ↓
-   [Iterate: Fix issues, re-run PM → Critic until BUILD verdict]
-      ↓
-4. [Build the actual product]
-      ↓
-5. Tester → tester_report_v1.md
-      ↓
-   [Fix bugs, re-test until DEMO READY]
-      ↓
-6. Marketing Director → marketing_pitch_v1.md
-```
-
----
-
 ## Project Structure
 
 ```
 Gemini Hackathon/
 ├── CLAUDE.md              ← You are here (project instructions)
-├── SESSION.md             ← Session context (create if missing)
-├── Documents/
-│   ├── 1.pdf              ← Hackathon overview
-│   ├── 2.pdf              ← Rules and judging
-│   ├── Resources and links.txt
-│   └── EXPERIENCE.md      ← Lessons from past projects
-├── agents/
-│   ├── market-researcher.md
-│   ├── product-manager.md
-│   ├── critic.md
-│   ├── tester.md
-│   └── marketing-director.md
-├── outputs/               ← Agent outputs go here
-│   └── [agent]_[task]_v[N].md
-└── src/                   ← Code goes here (when building)
+├── SESSION.md             ← Session context
+├── legacy/                ← Old Sir Reginald project (archived)
+│   ├── sir-reginald-app/
+│   └── outputs-sir-reginald/
+├── utilities/
+│   ├── Documents/         ← Hackathon docs (1.pdf, 2.pdf)
+│   ├── agents/            ← Agent prompts
+│   └── outputs/           ← Omnigenesis specs and reviews
+├── cli-prototype/         ← Day 1-2 API validation
+├── frontend/              ← Next.js app (main project)
+└── shared/                ← Shared types, prompts, constants
 ```
 
 ---
@@ -261,6 +234,7 @@ Gemini Hackathon/
 5. **Be harsh in critiques** - nice feedback doesn't win hackathons
 6. **Think demo-first** - everything should be demoable
 7. **Use Chrome MCP** for visual testing when code is ready
+8. **Reference the reference doc** for official documents from the developers
 
 ---
 
@@ -270,36 +244,39 @@ Gemini Hackathon/
 
 | Document | Purpose | Path |
 |----------|---------|------|
-| **Positioning v4** | Core identity, differentiators, messaging | `outputs/researcher_positioning_v4.md` |
-| **Product Spec v6** | Full technical spec, features, architecture | `outputs/pm_product-spec_v6.md` |
-| **UI Spec v3** | Component code, design system, UX patterns | `outputs/designer_ui-spec_v3.md` |
-| **Critic Review v7** | Final verdict, remaining concerns | `outputs/critic_review_v7.md` |
+| **Build Plan v1** | Day-by-day execution plan | `utilities/outputs/omnigenesis_build-plan_v1.md` |
+| **Product Spec v3** | Full technical spec, features, architecture | `utilities/outputs/pm_product-spec_omnigenesis_v3.md` |
+| **Critic Review v2** | Final verdict, remaining concerns | `utilities/outputs/critic_omnigenesis-review_v2.md` |
 
-### Non-Negotiables (From Positioning)
+### Non-Negotiables (From Build Plan)
 
-1. **"Before, not after"** - Real-time intervention, not post-upload analysis
-2. **Sir Reginald personality** - British aristocrat, never breaks character
-3. **THE SHOUT** - Emergency "[NAME]! HAND!" moment must work reliably
-4. **5 hardcoded scenarios** - glasses, blade, clutter, grip, hearing
-5. **Guided camera setup** - Sir Reginald directs camera positioning
-6. **Voice-first, hands-free** - Users have dirty hands, can't type
+1. **CLI Prototype First** - Validate all APIs before building UI (Days 1-2)
+2. **Combine < 3 seconds** - The addiction loop MUST be fast
+3. **Zoom transitions smooth** - The magic moment
+4. **Pre-generate demo content** - Never call live APIs during recording
+5. **Showcase ALL modalities** - Text (Flash) + Image (Nano Banana) + Video (Veo) + Context (1M)
+
+### Core Loop
+
+1. **COMBINE** - Merge elements to create new things (Gemini 3 Flash + Nano Banana)
+2. **ZOOM** - Enter any element to discover worlds inside (image generation)
+3. **EVOLVE** - Watch creations develop civilizations (Veo video, async)
 
 ### Scope Lock
 
-**IN SCOPE:**
-- Safety Monitor (proactive) - 5 scenarios
-- Visual Troubleshooter (reactive)
-- Guided camera setup
-- Latency indicator, thinking monocle
-- Personalization (name)
-- Auto-dismiss alerts (8s)
+**IN SCOPE (Must Build):**
+- Combine mechanic (12 primordials, drag & drop)
+- Zoom mechanic (infinite depth, context memory)
+- Evolve mechanic (async Veo, explicit wait messaging)
+- Visual polish (cosmic theme, particles)
+- Demo video (2 minutes, scripted path)
 
 **OUT OF SCOPE (Do NOT build):**
-- Complex CAD integration
-- CNC/welding/electronics
-- Mobile-first design
-- Multi-user features
-- Analytics dashboard (mock only)
+- Translate feature (killed)
+- Export as video (simplified to screenshot)
+- Sound effects (only if time permits)
+- Mobile optimization
+- User accounts / persistence
 
 ---
 
