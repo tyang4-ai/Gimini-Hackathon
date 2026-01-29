@@ -1,10 +1,10 @@
 # Gemini 3 Hackathon - Session Context
 
 ## Project Status
-- **Current Phase:** PLANNING - PM → Critic Pipeline
-- **Last Updated:** January 28, 2026 - Session 2 - MR pipeline complete
-- **Active Agent:** Product Manager
-- **Win Probability:** 42-55% (after MR refinement)
+- **Current Phase:** READY TO BUILD - Day 0 Validation Next
+- **Last Updated:** January 28, 2026 - Session 3 - PM → Critic Pipeline COMPLETE
+- **Active Agent:** None (planning complete)
+- **Win Probability:** 50-55% (BUILD approved)
 
 ---
 
@@ -74,18 +74,19 @@ Finalizing development plan and architecture via PM → Critic pipeline
 - [x] Project restructuring
 - [x] Agent prompts improved
 - [x] MR → Critic pipeline (3 iterations)
+- [x] PM → Critic pipeline (2 iterations) - **BUILD APPROVED**
+- [x] Finalize development plan (pm_product-spec_omnigenesis_v5.md)
+- [x] Finalize project architecture
 
 ### In Progress
-- [ ] PM → Critic pipeline (2 iterations)
-- [ ] Finalize development plan
-- [ ] Finalize project architecture
+- [ ] Day 0: API Validation (BEFORE any coding)
 
 ### Next Up
-- [ ] Day 1-2: API Validation (CLI prototype)
-- [ ] Day 3-4: Core Combine
-- [ ] Day 5-6: Zoom System
-- [ ] Day 7-8: Polish
-- [ ] Day 9-10: Evolution
+- [ ] Day 1-2: Foundation + Combine Setup
+- [ ] Day 3-5: Zoom System (expanded timeline)
+- [ ] Day 6-7: Technical Showcase + Polish
+- [ ] Day 8: Sound + Demo Mode
+- [ ] Day 9-10: BUFFER (Evolution P2 if time)
 - [ ] Day 11-12: Demo & Submit
 
 ---
@@ -98,6 +99,10 @@ Finalizing development plan and architecture via PM → Critic pipeline
 | Keep full scope | Combine + Zoom + Evolve | User preference, full breadth | Jan 28 |
 | Reject pivot suggestions | Stick to original | User wants playable game | Jan 28 |
 | Library choices | dnd-kit, React Flow, Framer Motion | Simple, achievable, polished | Jan 28 |
+| Evolution priority | P2 (not P1) | Veo unreliable, focus on core | Jan 28 |
+| Technical Showcase priority | P0 (not P1) | 40% judging weight on tech | Jan 28 |
+| Buffer days | Days 9-10 | Schedule needs slack | Jan 28 |
+| AI-assisted dev model | 50% debug time | Claude Code is fast but buggy | Jan 28 |
 
 ---
 
@@ -113,11 +118,18 @@ Finalizing development plan and architecture via PM → Critic pipeline
 | `utilities/outputs/critic_mr-review_v2.md` | Critic v2 (ACCEPT with reservations) |
 | `utilities/outputs/critic_mr-review_v3.md` | **FINAL** - BUILD WITH CAUTION |
 
-### Pending
+### PM Outputs
 | File | Purpose |
 |------|---------|
-| `utilities/outputs/pm_development-plan_omnigenesis_v1.md` | Detailed dev plan |
-| `utilities/outputs/pm_architecture_omnigenesis_v1.md` | Project architecture |
+| `utilities/outputs/pm_product-spec_omnigenesis_v5.md` | **FINAL** - AI-assisted dev reality, BUILD approved |
+| `utilities/outputs/pm_product-spec_omnigenesis_v4.md` | Comprehensive spec (pre-revision) |
+| `utilities/outputs/pm_product-spec_omnigenesis_v3.md` | Earlier simplified spec |
+
+### Critic Reviews (PM Pipeline)
+| File | Purpose |
+|------|---------|
+| `utilities/outputs/critic_omnigenesis-review_v3.md` | v4 review - REVISE (6.5/10) |
+| `utilities/outputs/critic_omnigenesis-review_v4.md` | **FINAL** - BUILD (7.5/10, 50-55%) |
 
 ---
 
@@ -151,6 +163,35 @@ Gemini Hackathon/
 ---
 
 ## Session Log
+
+### January 28, 2026 - Session 3 - PM → CRITIC PIPELINE
+**Duration:** ~1 hour
+**Focus:** PM → Critic pipeline (2 iterations)
+
+**Accomplishments:**
+- PM created comprehensive spec v4 (1500+ lines)
+- Critic reviewed v4: REVISE (6.5/10, 35% win prob)
+- PM revised to v5 with AI-assisted dev reality
+- Critic reviewed v5: BUILD (7.5/10, 50-55% win prob)
+- All 10 critic concerns addressed
+
+**Key Changes (v4 → v5):**
+- Evolution demoted P1 → P2 (Veo unreliable)
+- Technical Showcase promoted P1 → P0 (40% judging)
+- Days 9-10 now buffer, not Evolution
+- Added AI-assisted dev model (50% debug time)
+- Added error states, rate limiting, image caching
+- Added pre-computed demo path strategy
+
+**Final Spec:** `pm_product-spec_omnigenesis_v5.md`
+**Final Review:** `critic_omnigenesis-review_v4.md`
+
+**Next:**
+- Day 0: Validate all APIs (Flash, Imagen, Veo)
+- Pre-generate 12 primordial images
+- GO/NO-GO decision before any game code
+
+---
 
 ### January 28, 2026 - Session 2 - RESEARCH PIPELINE
 **Duration:** ~1.5 hours
