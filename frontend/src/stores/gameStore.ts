@@ -333,17 +333,40 @@ export const selectHasDiscovered = (state: GameStore, elementId: string) =>
 
 // === DERIVED DATA ===
 
-export const useDiscoveredElements = () =>
-  useGameStore((state) => Array.from(state.discoveredElements.values()));
+// These hooks access derived data from the store
+// We access the Map directly and convert to array in the component to avoid
+// creating new arrays on every selector call
 
-export const useMilestones = () =>
-  useGameStore((state) => Array.from(state.milestones.values()));
+// Get the discovered elements Map directly - components should convert to array as needed
+export const useDiscoveredElementsMap = () =>
+  useGameStore((state) => state.discoveredElements);
 
-export const useZoomBreadcrumbs = () =>
-  useGameStore((state) =>
-    state.zoomPath.scenes.map((scene) => ({
-      id: scene.id,
-      name: scene.description.split(' ').slice(0, 3).join(' ') + '...',
-      depth: scene.depth,
-    }))
-  );
+// Get the milestones Map directly
+export const useMilestonesMap = () =>
+  useGameStore((state) => state.milestones);
+
+// Get zoom scenes array directly (already an array, no conversion needed)
+export const useZoomScenes = () =>
+  useGameStore((state) => state.zoomPath.scenes);
+
+// Helper hooks that return arrays - use with caution, may cause re-renders
+// Only use when you need the array form and understand the re-render implications
+export const useDiscoveredElements = () => {
+  const map = useGameStore((state) => state.discoveredElements);
+  // Convert Map to array - this will be stable as long as the Map reference is stable
+  return Array.from(map.values());
+};
+
+export const useMilestones = () => {
+  const map = useGameStore((state) => state.milestones);
+  return Array.from(map.values());
+};
+
+export const useZoomBreadcrumbs = () => {
+  const scenes = useGameStore((state) => state.zoomPath.scenes);
+  return scenes.map((scene) => ({
+    id: scene.id,
+    name: scene.description.split(' ').slice(0, 3).join(' ') + '...',
+    depth: scene.depth,
+  }));
+};
