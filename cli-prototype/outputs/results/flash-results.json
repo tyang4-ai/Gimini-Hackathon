@@ -1,0 +1,179 @@
+{
+  "timestamp": "2026-01-31T22:45:39.985Z",
+  "numTests": 50,
+  "stats": {
+    "count": 50,
+    "successCount": 50,
+    "failureCount": 0,
+    "successRate": 100,
+    "min": 661,
+    "max": 992,
+    "mean": 769,
+    "median": 766,
+    "p50": 766,
+    "p75": 799,
+    "p90": 846,
+    "p95": 903,
+    "p99": 992,
+    "stdDev": 67
+  },
+  "samples": [
+    {
+      "element1": "Stone",
+      "element2": "Water",
+      "result": {
+        "success": true,
+        "result": {
+          "name": "Petrified Water",
+          "description": "Water that has been infused with the essence of stone, taking on solid, flowing forms.",
+          "emoji": "💧",
+          "category": "Matter"
+        },
+        "latencyMs": 938,
+        "rawResponse": "{\n  \"name\": \"Petrified Water\",\n  \"description\": \"Water that has been infused with the essence of stone, taking on solid, flowing forms.\",\n  \"emoji\": \"💧\",\n  \"category\": \"Matter\"\n}"
+      }
+    },
+    {
+      "element1": "Air",
+      "element2": "Stone",
+      "result": {
+        "success": true,
+        "result": {
+          "name": "Grounded Wind",
+          "description": "Whispers carried on dust, the sigh of mountains, solid air.",
+          "emoji": "⛰️",
+          "category": "Phenomenon"
+        },
+        "latencyMs": 766,
+        "rawResponse": "{\n  \"name\": \"Grounded Wind\",\n  \"description\": \"Whispers carried on dust, the sigh of mountains, solid air.\",\n  \"emoji\": \"⛰️\",\n  \"category\": \"Phenomenon\"\n}"
+      }
+    },
+    {
+      "element1": "Stone",
+      "element2": "Wonder",
+      "result": {
+        "success": true,
+        "result": {
+          "name": "Dreamstone",
+          "description": "Solidified imagination. A bridge between the tangible and the ethereal, holding echoes of possibility.",
+          "emoji": "💎",
+          "category": "Concept"
+        },
+        "latencyMs": 715,
+        "rawResponse": "{\n  \"name\": \"Dreamstone\",\n  \"description\": \"Solidified imagination. A bridge between the tangible and the ethereal, holding echoes of possibility.\",\n  \"emoji\": \"💎\",\n  \"category\": \"Concept\"\n}"
+      }
+    },
+    {
+      "element1": "Water",
+      "element2": "Shimmer",
+      "result": {
+        "success": true,
+        "result": {
+          "name": "Luminescence",
+          "description": "Water infused with ethereal shimmer, creating a soft, radiant glow in the darkness. ",
+          "emoji": "💧✨",
+          "category": "Phenomenon"
+        },
+        "latencyMs": 808,
+        "rawResponse": "{\n  \"name\": \"Luminescence\",\n  \"description\": \"Water infused with ethereal shimmer, creating a soft, radiant glow in the darkness. \",\n  \"emoji\": \"💧✨\",\n  \"category\": \"Phenomenon\"\n}"
+      }
+    },
+    {
+      "element1": "Longing",
+      "element2": "Fire",
+      "result": {
+        "success": true,
+        "result": {
+          "name": "Heartfire",
+          "description": "The burning desire for connection; a passionate yearning that ignites the soul.",
+          "emoji": "🔥❤️‍🔥",
+          "category": "Concept"
+        },
+        "latencyMs": 808,
+        "rawResponse": "{\n  \"name\": \"Heartfire\",\n  \"description\": \"The burning desire for connection; a passionate yearning that ignites the soul.\",\n  \"emoji\": \"🔥❤️‍🔥\",\n  \"category\": \"Concept\"\n}"
+      }
+    },
+    {
+      "element1": "Time",
+      "element2": "Light",
+      "result": {
+        "success": true,
+        "result": {
+          "name": "Chronal Radiance",
+          "description": "Glimmers of moments, solidified into tangible light. Echoes of yesterday illuminate the path ahead.",
+          "emoji": "✨",
+          "category": "Phenomenon"
+        },
+        "latencyMs": 849,
+        "rawResponse": "{\n  \"name\": \"Chronal Radiance\",\n  \"description\": \"Glimmers of moments, solidified into tangible light. Echoes of yesterday illuminate the path ahead.\",\n  \"emoji\": \"✨\",\n  \"category\": \"Phenomenon\"\n}"
+      }
+    },
+    {
+      "element1": "Stone",
+      "element2": "Air",
+      "result": {
+        "success": true,
+        "result": {
+          "name": "Gravelwind",
+          "description": "Whispering stones carried on the breeze, a constant erosion and reformation in the sky.",
+          "emoji": "🌬️",
+          "category": "Phenomenon"
+        },
+        "latencyMs": 802,
+        "rawResponse": "{\n  \"name\": \"Gravelwind\",\n  \"description\": \"Whispering stones carried on the breeze, a constant erosion and reformation in the sky.\",\n  \"emoji\": \"🌬️\",\n  \"category\": \"Phenomenon\"\n}"
+      }
+    },
+    {
+      "element1": "Fire",
+      "element2": "Air",
+      "result": {
+        "success": true,
+        "result": {
+          "name": "Smoke",
+          "description": "The ephemeral dance of combustion, a hazy veil between worlds, carrying whispers on the wind.",
+          "emoji": "💨",
+          "category": "Matter"
+        },
+        "latencyMs": 798,
+        "rawResponse": "{\n  \"name\": \"Smoke\",\n  \"description\": \"The ephemeral dance of combustion, a hazy veil between worlds, carrying whispers on the wind.\",\n  \"emoji\": \"💨\",\n  \"category\": \"Matter\"\n}"
+      }
+    },
+    {
+      "element1": "Shimmer",
+      "element2": "Fire",
+      "result": {
+        "success": true,
+        "result": {
+          "name": "Emberlight",
+          "description": "Glimmering flames that dance with starlight, casting ethereal glows and whispers of ancient magic.",
+          "emoji": "🔥✨",
+          "category": "Energy"
+        },
+        "latencyMs": 865,
+        "rawResponse": "{\n  \"name\": \"Emberlight\",\n  \"description\": \"Glimmering flames that dance with starlight, casting ethereal glows and whispers of ancient magic.\",\n  \"emoji\": \"🔥✨\",\n  \"category\": \"Energy\"\n}"
+      }
+    },
+    {
+      "element1": "Water",
+      "element2": "Stone",
+      "result": {
+        "success": true,
+        "result": {
+          "name": "Petrified Water",
+          "description": "Water that has been turned to stone, holding the secrets and memories of ages. ",
+          "emoji": "💧",
+          "category": "Matter"
+        },
+        "latencyMs": 717,
+        "rawResponse": "{\n  \"name\": \"Petrified Water\",\n  \"description\": \"Water that has been turned to stone, holding the secrets and memories of ages. \",\n  \"emoji\": \"💧\",\n  \"category\": \"Matter\"\n}"
+      }
+    }
+  ],
+  "verdict": {
+    "passed": true,
+    "p95Target": 1500,
+    "p95Actual": 903,
+    "successRateTarget": 95,
+    "successRateActual": 100
+  }
+}

@@ -1,0 +1,9 @@
+{
+  "timestamp": "2026-01-31T22:50:54.146Z",
+  "accessible": false,
+  "endpoint": "https://us-central1-aiplatform.googleapis.com/v1/projects/*/locations/us-central1/publishers/google/models/veo-001:predict",
+  "error": "HTTP 401: {\n  \"error\": {\n    \"code\": 401,\n    \"message\": \"API keys are not supported by this API. Expected OAu",
+  "statusCode": 401,
+  "responseBody": "{\n  \"error\": {\n    \"code\": 401,\n    \"message\": \"API keys are not supported by this API. Expected OAuth2 access token or other authentication credentials that assert a principal. See https://cloud.google.com/docs/authentication\",\n    \"status\": \"UNAUTHENTICATED\",\n    \"details\": [\n      {\n        \"@type\": \"type.googleapis.com/google.rpc.ErrorInfo\",\n        \"reason\": \"CREDENTIALS_MISSING\",\n        \"domain\": \"googleapis.com\",\n        \"metadata\": {\n          \"service\": \"aiplatform.googleapis.com\",\n   ",
+  "recommendation": "Cut Evolution feature, focus on Combine + Zoom"
+}

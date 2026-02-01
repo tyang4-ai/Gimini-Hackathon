@@ -1,0 +1,141 @@
+{
+  "timestamp": "2026-01-31T22:50:36.397Z",
+  "model": "Imagen 4",
+  "numTests": 30,
+  "stats": {
+    "count": 30,
+    "successCount": 30,
+    "failureCount": 0,
+    "successRate": 100,
+    "min": 7099,
+    "max": 9817,
+    "mean": 8326,
+    "median": 8183,
+    "p50": 8183,
+    "p75": 8905,
+    "p90": 9170,
+    "p95": 9756,
+    "p99": 9817,
+    "stdDev": 734
+  },
+  "samples": [
+    {
+      "prompt": "Crystalline fire essence, burning eternally",
+      "type": "icon",
+      "result": {
+        "success": true,
+        "latencyMs": 8262,
+        "imagePath": "test_1_icon.png",
+        "mimeType": "image/png",
+        "model": "imagen-4.0-generate-001"
+      }
+    },
+    {
+      "prompt": "Frozen water droplet with inner glow",
+      "type": "icon",
+      "result": {
+        "success": true,
+        "latencyMs": 7332,
+        "imagePath": "test_2_icon.png",
+        "mimeType": "image/png",
+        "model": "imagen-4.0-generate-001"
+      }
+    },
+    {
+      "prompt": "Ancient stone with carved runes",
+      "type": "icon",
+      "result": {
+        "success": true,
+        "latencyMs": 8164,
+        "imagePath": "test_3_icon.png",
+        "mimeType": "image/png",
+        "model": "imagen-4.0-generate-001"
+      }
+    },
+    {
+      "prompt": "Swirling vortex of pure air",
+      "type": "icon",
+      "result": {
+        "success": true,
+        "latencyMs": 9046,
+        "imagePath": "test_4_icon.png",
+        "mimeType": "image/png",
+        "model": "imagen-4.0-generate-001"
+      }
+    },
+    {
+      "prompt": "Radiant light sphere, blinding brightness",
+      "type": "icon",
+      "result": {
+        "success": true,
+        "latencyMs": 8000,
+        "imagePath": "test_5_icon.png",
+        "mimeType": "image/png",
+        "model": "imagen-4.0-generate-001"
+      }
+    },
+    {
+      "prompt": "Dark void portal, consuming all",
+      "type": "icon",
+      "result": {
+        "success": true,
+        "latencyMs": 8980,
+        "imagePath": "test_6_icon.png",
+        "mimeType": "image/png",
+        "model": "imagen-4.0-generate-001"
+      }
+    },
+    {
+      "prompt": "Shimmering aurora essence",
+      "type": "icon",
+      "result": {
+        "success": true,
+        "latencyMs": 7299,
+        "imagePath": "test_7_icon.png",
+        "mimeType": "image/png",
+        "model": "imagen-4.0-generate-001"
+      }
+    },
+    {
+      "prompt": "Silent bell, muted vibrations",
+      "type": "icon",
+      "result": {
+        "success": true,
+        "latencyMs": 7825,
+        "imagePath": "test_8_icon.png",
+        "mimeType": "image/png",
+        "model": "imagen-4.0-generate-001"
+      }
+    },
+    {
+      "prompt": "Hourglass of flowing time",
+      "type": "icon",
+      "result": {
+        "success": true,
+        "latencyMs": 9170,
+        "imagePath": "test_9_icon.png",
+        "mimeType": "image/png",
+        "model": "imagen-4.0-generate-001"
+      }
+    },
+    {
+      "prompt": "Question mark made of stardust",
+      "type": "icon",
+      "result": {
+        "success": true,
+        "latencyMs": 7099,
+        "imagePath": "test_10_icon.png",
+        "mimeType": "image/png",
+        "model": "imagen-4.0-generate-001"
+      }
+    }
+  ],
+  "verdict": {
+    "passed": false,
+    "p95Target": 2000,
+    "p95Actual": 9756,
+    "successRateTarget": 90,
+    "successRateActual": 100
+  },
+  "imagesDirectory": "C:\\Users\\22317\\Documents\\Coding\\Hackathon Stuff\\Gemini Hackathon\\cli-prototype\\outputs\\imagen-test"
+}

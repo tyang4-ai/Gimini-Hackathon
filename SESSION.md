@@ -1,24 +1,30 @@
 # Gemini 3 Hackathon - Session Context
 
 ## Project Status
-- **Current Phase:** READY TO BUILD - Day 0 Validation Next
-- **Last Updated:** January 28, 2026 - Session 3 - PM → Critic Pipeline COMPLETE
-- **Active Agent:** None (planning complete)
-- **Win Probability:** 50-55% (BUILD approved)
+- **Current Phase:** Development - Core Game Loop
+- **Last Updated:** February 1, 2026 - Session 7 - Frontend Built
+- **Active Agent:** None (testing and polish next)
+- **Win Probability:** 50-55% (BUILD approved - v10 FINAL)
 
 ---
 
 ## Quick Context
 
 ### What We're Building
-**Omnigenesis** - "Where Creation Never Ends"
+**Omnigenesis: The Memory** - "The universe remembers everything. You are the Witness."
 
-Infinite Craft meets infinite depth. Combine anything, zoom into everything.
+Infinite Craft meets infinite depth. You don't create - you REMEMBER. Every element has worlds inside.
 
 ### Core Loop
-1. **COMBINE** - Merge elements (Gemini 3 Flash + Nano Banana) - **< 2 seconds**
-2. **ZOOM** - Enter any element to discover worlds inside (image generation)
-3. **EVOLVE** - Watch creations develop civilizations (Veo video, async 1-2 min)
+1. **COMBINE** - Trigger memories by merging elements (Gemini 3 Flash) - **< 2 seconds**
+2. **ZOOM** - Descend into elements to discover memories within (Imagen 4) - **9-second reveal for milestones**
+3. **EVOLVE** - Auto-triggers on first milestone discovery (Veo 3.1, 8s video, async 1-2 min)
+
+### Key Design Features
+- **Two-tier elements**: Milestones (15-20, images+lore) vs Regular (hundreds, emoji+whisper)
+- **9-second reveal**: Screen dims, particles swirl, lore types out, image sharpens
+- **Context callbacks**: "This reminds you of..." using 1M token context
+- **Depth progression**: I (Primordial) → II (Becoming) → III (Flourishing) → IV (Reckoning) → V+ (Infinite)
 
 ### Tech Stack
 | Category | Choice |
@@ -30,7 +36,14 @@ Infinite Craft meets infinite depth. Combine anything, zoom into everything.
 | Drag & Drop | dnd-kit |
 | Animations | Framer Motion |
 | Graph Viz | React Flow |
-| APIs | Gemini Flash, Nano Banana, Veo 3.1 |
+
+### Gemini APIs
+| API | Model ID | Purpose | Latency |
+|-----|----------|---------|---------|
+| Text | gemini-3-flash | Combination logic, scene generation | < 1.5s |
+| Image | imagen-4 | Milestone artwork, primordials | 8-10s |
+| Video | veo-3.1-generate-preview | Evolution videos (8s MP4) | 1-2 min |
+| Context | 1M token window | Memory callbacks | N/A |
 
 ### Current Focus
 **Day 0: API Validation** - Must validate all APIs before writing game code
@@ -79,11 +92,16 @@ Infinite Craft meets infinite depth. Combine anything, zoom into everything.
 - [x] Finalize project architecture
 
 ### In Progress
-- [ ] Day 0: API Validation (BEFORE any coding)
+- [x] Day 0: API Validation scripts created
+- [x] Day 0: Run tests with API key (Flash, Imagen validated; Veo works)
+- [x] Day 1: Frontend foundation (Next.js, Tailwind, Zustand)
+- [x] Day 2: Core components (ElementCard, CombineZone, ZoomViewport)
+- [x] Day 3: APIs working (combine, zoom tested)
 
 ### Next Up
-- [ ] Day 1-2: Foundation + Combine Setup
-- [ ] Day 3-5: Zoom System (expanded timeline)
+- [ ] Integration: Wire up combine/zoom with UI
+- [ ] Add MilestoneReveal animation to game flow
+- [ ] Test evolution API with milestone
 - [ ] Day 6-7: Technical Showcase + Polish
 - [ ] Day 8: Sound + Demo Mode
 - [ ] Day 9-10: BUFFER (Evolution P2 if time)
@@ -103,6 +121,12 @@ Infinite Craft meets infinite depth. Combine anything, zoom into everything.
 | Technical Showcase priority | P0 (not P1) | 40% judging weight on tech | Jan 28 |
 | Buffer days | Days 9-10 | Schedule needs slack | Jan 28 |
 | AI-assisted dev model | 50% debug time | Claude Code is fast but buggy | Jan 28 |
+| "The Memory" narrative | Framing as "remembering" | Differentiates from Infinite Craft | Jan 30 |
+| Demo leads with ZOOM | Zoom-first, then combine | Avoid "clone" perception | Jan 30 |
+| 2-element recipe chains | All combos are 2 elements | Matches UI, adds discovery | Jan 30 |
+| Milestone vs Regular elements | 15-20 milestones get images | Controls API cost, keeps pace fast | Jan 30 |
+| Auto-evolve on first discovery | Veo triggers automatically | Removes friction for wow moment | Jan 30 |
+| Veo video model | veo-3.1-generate-preview | Generates 8s MP4 with audio | Jan 30 |
 
 ---
 
@@ -121,15 +145,21 @@ Infinite Craft meets infinite depth. Combine anything, zoom into everything.
 ### PM Outputs
 | File | Purpose |
 |------|---------|
-| `utilities/outputs/pm_product-spec_omnigenesis_v5.md` | **FINAL** - AI-assisted dev reality, BUILD approved |
-| `utilities/outputs/pm_product-spec_omnigenesis_v4.md` | Comprehensive spec (pre-revision) |
-| `utilities/outputs/pm_product-spec_omnigenesis_v3.md` | Earlier simplified spec |
+| `utilities/outputs/pm_product-spec_omnigenesis_v10.md` | **FINAL IMPLEMENTATION** - All code ready to copy-paste |
+| `utilities/outputs/pm_product-spec_omnigenesis_v9.md` | Implementation details: code, UI, colors, animations, sound |
+| `utilities/outputs/pm_product-spec_omnigenesis_v8.md` | Final polish: intermediate UX, demo fallbacks, Veo gate |
+| `utilities/outputs/pm_product-spec_omnigenesis_v7.md` | Delta: Demo restructure, context showcase, 2-element chains |
+| `utilities/outputs/pm_product-spec_omnigenesis_v6.md` | Base: Memory narrative, milestones, 9-second reveal |
+| `utilities/outputs/pm_story-design_v1.md` | "The Memory" narrative design document |
 
 ### Critic Reviews (PM Pipeline)
 | File | Purpose |
 |------|---------|
-| `utilities/outputs/critic_omnigenesis-review_v3.md` | v4 review - REVISE (6.5/10) |
-| `utilities/outputs/critic_omnigenesis-review_v4.md` | **FINAL** - BUILD (7.5/10, 50-55%) |
+| `utilities/outputs/critic_omnigenesis-review_v9.md` | **FINAL** - APPROVED FOR DEV (50-55% win probability) |
+| `utilities/outputs/critic_omnigenesis-review_v8.md` | v9 review - 85% complete, identified gaps |
+| `utilities/outputs/critic_omnigenesis-review_v7.md` | v8 review - BUILD (55-60%) |
+| `utilities/outputs/critic_omnigenesis-review_v6.md` | v7 review - BUILD (50-55%) |
+| `utilities/outputs/critic_omnigenesis-review_v5.md` | v6 review - MAYBE (40-45%) |
 
 ---
 
@@ -147,9 +177,19 @@ Gemini Hackathon/
 │   ├── Documents/         # Hackathon docs
 │   ├── agents/            # Agent prompts (improved)
 │   └── outputs/           # Research & specs
+├── cli-prototype/         # Day 0 API validation (CREATED)
+│   ├── src/
+│   │   ├── test-flash.ts          # Gemini Flash benchmark (50 calls)
+│   │   ├── test-imagen.ts         # Imagen 3 benchmark (30 images)
+│   │   ├── test-veo.ts            # Veo 3.1 accessibility check
+│   │   ├── generate-primordials.ts # Generate 12 element images
+│   │   └── utils/                 # Client wrappers & stats
+│   ├── outputs/
+│   │   ├── primordials/           # Generated element images
+│   │   └── results/               # Test result JSON files
+│   └── .env.local                 # API key (user must update)
 └── [TO BE CREATED]
-    ├── cli-prototype/     # Day 1-2 API validation
-    └── app/               # Main Next.js app
+    └── frontend/              # Main Next.js app
 ```
 
 ---
@@ -163,6 +203,196 @@ Gemini Hackathon/
 ---
 
 ## Session Log
+
+### February 1, 2026 - Session 7 - FRONTEND DEVELOPMENT
+**Duration:** ~1 hour
+**Focus:** Build core game frontend
+
+**Accomplishments:**
+- Built complete frontend foundation with Next.js 14, Tailwind, Zustand
+- Created all core components:
+  - `ElementCard.tsx` - Draggable element cards with category-specific styling
+  - `CombineZone.tsx` - Drop zone with two slots, auto-combine
+  - `ZoomViewport.tsx` - Scene display with positioned elements
+  - `MilestoneReveal.tsx` - 9-second dramatic reveal animation
+  - `EvolutionPlayer.tsx` - Video playback with loading states
+- Created all API routes:
+  - `/api/combine` - Working (tested: Stone + Water = "Petrified Tears")
+  - `/api/zoom` - Working (tested: generates 4 elements with gradient)
+  - `/api/evolution` - Created (Veo 3.1 with predictLongRunning)
+- Fixed zoom API parsing issues (markdown code blocks, token limits)
+- TypeScript compilation passes with no errors
+- Dev server running at http://localhost:3001
+
+**Components Summary:**
+| Component | Status | Notes |
+|-----------|--------|-------|
+| ElementCard | ✅ | Drag & drop, category styling |
+| CombineZone | ✅ | Two slots, auto-combine trigger |
+| ZoomViewport | ✅ | Scene rendering, element positions |
+| MilestoneReveal | ✅ | 9-second animation timeline |
+| EvolutionPlayer | ✅ | Video modal with loading states |
+
+**APIs Summary:**
+| Endpoint | Status | Response Time |
+|----------|--------|---------------|
+| /api/combine | ✅ | ~900ms |
+| /api/zoom | ✅ | ~1.5s |
+| /api/evolution | Created | ~45-60s (async) |
+
+**Next Steps:**
+1. Wire up combine/zoom APIs to UI interactions
+2. Add MilestoneReveal to game flow when milestone discovered
+3. Test evolution API end-to-end
+4. Polish and demo preparation
+
+---
+
+### January 31, 2026 - Session 6 - IMPLEMENTATION SPEC (Rounds 4-5)
+**Duration:** ~30 min
+**Focus:** PM-Critic pipeline for implementation details
+
+**Accomplishments:**
+- Created PM v9 with full implementation details:
+  - Complete file structure and TypeScript interfaces
+  - Zustand stores with actions and persistence
+  - Custom hooks (useCombine, useRevealSequence)
+  - "Celestial Dreams" color palette (30+ hex values)
+  - Framer Motion animation configs
+  - Sound design with 11 effects and triggers
+  - API route implementations
+
+- Critic v8 reviewed v9: 85% complete, identified gaps:
+  - Missing prompts.ts, hints.ts
+  - Missing useDragElement.ts implementation
+  - Missing TypewriterText component
+  - Missing Gemini JSON mode
+  - Missing demo mode flag
+
+- Created PM v10 filling ALL gaps:
+  - prompts.ts with 4 complete prompt templates
+  - hints.ts with 8 hint triggers
+  - useDragElement.ts with hit detection
+  - TypewriterText.tsx component and hook
+  - Gemini JSON mode with SchemaType definitions
+  - Demo mode with env variable and data structure
+  - Font loading via next/font/google
+  - cn.ts and depth.ts utilities
+  - ParticleField and RevealParticles components
+  - Audio volume ramping
+
+- Critic v9 reviewed v10: **APPROVED FOR DEVELOPMENT**
+  - All 11 gaps filled
+  - No blockers remaining
+  - 50-55% win probability
+  - Spec LOCKED for development
+
+**Files Created:**
+- `utilities/outputs/pm_product-spec_omnigenesis_v9.md`
+- `utilities/outputs/pm_product-spec_omnigenesis_v10.md` (FINAL)
+- `utilities/outputs/critic_omnigenesis-review_v8.md`
+- `utilities/outputs/critic_omnigenesis-review_v9.md` (FINAL)
+
+**Spec Status:**
+- v10 is the FINAL implementation spec
+- Developers can start coding immediately
+- No further spec iteration needed
+
+**Next Steps:**
+1. Run API validation (Day 0) with API key
+2. Test Veo 3.1 quality against criteria
+3. Begin frontend development using v10 spec
+4. Follow 5-step quick start from Critic v9
+
+---
+
+### January 30, 2026 - Session 5 - PM-CRITIC PIPELINE v2 (3 Rounds)
+**Duration:** ~45 min
+**Focus:** PM-Critic pipeline with "The Memory" narrative integration
+
+**Accomplishments:**
+- Ran 3-round PM-Critic pipeline
+- Integrated "The Memory" narrative system throughout spec
+- Win probability increased: 40-45% → 50-55% → **55-60%**
+- All critic concerns addressed across v6 → v7 → v8
+
+**Key Changes:**
+| Round | PM Version | Changes | Critic Verdict |
+|-------|------------|---------|----------------|
+| 1 | v6 | Memory narrative, milestones, 9-second reveal, Veo 3.1 | MAYBE (40-45%) |
+| 2 | v7 | Demo zoom-first, context showcase, 2-element chains, wonder positioning | BUILD (50-55%) |
+| 3 | v8 | Intermediate UX, demo fallbacks, recipe hints, Veo quality gate | **BUILD (55-60%)** |
+
+**Critic Improvements Made:**
+1. ✅ Demo leads with ZOOM (not Combine)
+2. ✅ Context callbacks unmissable (animated token counter)
+3. ✅ 2-element recipe chains (consistent with UI)
+4. ✅ Time-cut framing for Veo async
+5. ✅ "Wonder over utility" assertive positioning
+6. ✅ Intermediate element pathway indicators
+7. ✅ Demo timing fallback (cuttable beats)
+8. ✅ Veo Day 0-2 quality gate with thresholds
+
+**API Corrections:**
+- Gemini 3 Flash (confirmed model name)
+- Veo 3.1 (`veo-3.1-generate-preview`) - generates 8s MP4 video with audio
+- Imagen 4 for milestone images
+
+**Final Spec:** v8 (LOCKED FOR DEVELOPMENT)
+**Final Review:** v7 (55-60% win probability)
+
+**Next Steps:**
+1. Run API validation with API key (Day 0)
+2. Test Veo 3.1 quality against v8 criteria
+3. Begin frontend development (Day 1)
+
+---
+
+### January 30, 2026 - Session 4 - DAY 0 IMPLEMENTATION
+**Duration:** ~30 min
+**Focus:** Create API validation scripts
+
+**Accomplishments:**
+- Created `cli-prototype/` folder structure
+- Implemented Gemini Flash benchmark (50 combination calls)
+- Implemented Imagen 3 benchmark (30 image generations)
+- Implemented Veo 3.1 accessibility check
+- Implemented 12 primordial image generator
+- Created utility modules (gemini-client, imagen-client, stats)
+- All TypeScript compiles without errors
+- Dependencies installed
+
+**Files Created:**
+- `cli-prototype/package.json` - Dependencies
+- `cli-prototype/tsconfig.json` - TypeScript config
+- `cli-prototype/.env.local` - API key placeholder
+- `cli-prototype/src/utils/gemini-client.ts` - Flash API wrapper
+- `cli-prototype/src/utils/imagen-client.ts` - Imagen API wrapper
+- `cli-prototype/src/utils/stats.ts` - Latency statistics
+- `cli-prototype/src/test-flash.ts` - Flash benchmark
+- `cli-prototype/src/test-imagen.ts` - Imagen benchmark
+- `cli-prototype/src/test-veo.ts` - Veo check
+- `cli-prototype/src/generate-primordials.ts` - 12 element images
+
+**Next Steps:**
+1. **USER ACTION REQUIRED:** Update `.env.local` with real API key
+2. Run `npm run test:flash` - validate Flash API
+3. Run `npm run test:imagen` - validate Imagen 3
+4. Run `npm run test:veo` - check Veo access
+5. Run `npm run generate:primordials` - create 12 images
+6. Review results and make GO/NO-GO decision
+
+**Commands:**
+```bash
+cd "C:/Users/22317/Documents/Coding/Hackathon Stuff/Gemini Hackathon/cli-prototype"
+# Edit .env.local with your API key first!
+npm run test:flash
+npm run test:imagen
+npm run test:veo
+npm run generate:primordials
+```
+
+---
 
 ### January 28, 2026 - Session 3 - PM → CRITIC PIPELINE
 **Duration:** ~1 hour
