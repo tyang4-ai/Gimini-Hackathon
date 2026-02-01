@@ -3,13 +3,12 @@
 import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { ZoomScene, SceneElement, DepthTier } from '@/types';
+import { useZoom } from '@/hooks/useZoom';
+import { useSoundEffect } from '@/hooks/useSound';
 import { cn } from '@/utils/cn';
 
 interface ZoomViewportProps {
-  scene: ZoomScene | null;
   onElementClick?: (element: SceneElement) => void;
-  onZoomOut?: () => void;
-  isLoading?: boolean;
   className?: string;
 }
 
@@ -232,6 +231,84 @@ function ContextNotification({
   );
 }
 
+// Breadcrumb navigation component
+function ZoomBreadcrumbs({
+  breadcrumbs,
+  onNavigate,
+}: {
+  breadcrumbs: Array<{ id: string; name: string; depth: DepthTier }>;
+  onNavigate: (index: number) => void;
+}) {
+  if (breadcrumbs.length === 0) return null;
+
+  return (
+    <motion.div
+      className="absolute top-4 left-4 z-20 flex items-center gap-1 flex-wrap max-w-[60%]"
+      initial={{ opacity: 0, x: -10 }}
+      animate={{ opacity: 1, x: 0 }}
+      transition={{ delay: 0.2 }}
+    >
+      <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-void/80 backdrop-blur-sm border border-surface/30">
+        {/* Home / Surface link */}
+        <button
+          onClick={() => onNavigate(-1)}
+          className={cn(
+            'text-xs font-display text-text-muted hover:text-text-primary transition-colors',
+            'px-2 py-0.5 rounded hover:bg-surface/30'
+          )}
+        >
+          Surface
+        </button>
+
+        {breadcrumbs.map((crumb, index) => (
+          <div key={crumb.id} className="flex items-center">
+            <span className="text-text-muted/50 mx-1">/</span>
+            <button
+              onClick={() => onNavigate(index)}
+              className={cn(
+                'text-xs font-display transition-colors px-2 py-0.5 rounded',
+                index === breadcrumbs.length - 1
+                  ? cn('text-text-primary', depthDisplay[crumb.depth].color)
+                  : 'text-text-muted hover:text-text-primary hover:bg-surface/30'
+              )}
+            >
+              {crumb.name}
+            </button>
+          </div>
+        ))}
+      </div>
+    </motion.div>
+  );
+}
+
+// Error notification component
+function ErrorNotification({ message, onDismiss }: { message: string; onDismiss: () => void }) {
+  return (
+    <motion.div
+      className="absolute top-4 right-4 z-30 max-w-xs"
+      initial={{ opacity: 0, x: 20 }}
+      animate={{ opacity: 1, x: 0 }}
+      exit={{ opacity: 0, x: 20 }}
+    >
+      <div className="px-4 py-3 rounded-lg bg-rose/20 border border-rose/50 backdrop-blur-sm">
+        <div className="flex items-start gap-2">
+          <span className="text-rose">&#x26A0;</span>
+          <div className="flex-1">
+            <p className="text-sm text-rose font-display">Zoom Failed</p>
+            <p className="text-xs text-text-muted mt-1">{message}</p>
+          </div>
+          <button
+            onClick={onDismiss}
+            className="text-text-muted hover:text-text-primary transition-colors"
+          >
+            &#x2715;
+          </button>
+        </div>
+      </div>
+    </motion.div>
+  );
+}
+
 // Empty state - cosmic void
 function CosmicVoid() {
   return (
@@ -290,13 +367,27 @@ function CosmicVoid() {
 }
 
 export function ZoomViewport({
-  scene,
   onElementClick,
-  onZoomOut,
-  isLoading = false,
   className,
 }: ZoomViewportProps) {
   const [showContextCallback, setShowContextCallback] = useState(false);
+  const [showError, setShowError] = useState(true);
+
+  // Sound effects
+  const play = useSoundEffect();
+
+  // Use the zoom hook for all zoom functionality
+  const {
+    zoomInto,
+    zoomOut,
+    zoomToScene,
+    isLoading,
+    error,
+    currentScene: scene,
+    breadcrumbs,
+    canZoomOut,
+  } = useZoom();
+
   const { displayText, isComplete } = useTypewriter(scene?.description || '', 25);
 
   // Show context callback notification when scene has one
@@ -311,6 +402,45 @@ export function ZoomViewport({
     }
     setShowContextCallback(false);
   }, [scene?.contextCallback]);
+
+  // Reset error visibility when error changes
+  useEffect(() => {
+    if (error) {
+      setShowError(true);
+    }
+  }, [error]);
+
+  // Handle element click - zoom if possible, otherwise pass to parent
+  const handleElementClick = useCallback(
+    async (element: SceneElement) => {
+      if (element.canZoomInto) {
+        play('zoom');
+        await zoomInto(element.id);
+      }
+      // Always notify parent of click (for combine/other functionality)
+      onElementClick?.(element);
+    },
+    [zoomInto, onElementClick, play]
+  );
+
+  // Handle breadcrumb navigation
+  const handleBreadcrumbNavigate = useCallback(
+    (index: number) => {
+      if (index === -1) {
+        // Go back to surface - navigate to scene 0 then pop once more
+        // This clears all scenes from the zoom path
+        if (breadcrumbs.length > 0) {
+          zoomToScene(0);
+          // After navigating to scene 0, we need to pop that scene too
+          // Schedule the final pop for next tick to ensure state updates
+          setTimeout(() => zoomOut(), 0);
+        }
+      } else {
+        zoomToScene(index);
+      }
+    },
+    [zoomToScene, zoomOut, breadcrumbs.length]
+  );
 
   const handleElementDragStart = useCallback(
     (element: SceneElement) => (e: React.DragEvent<HTMLDivElement>) => {
@@ -339,6 +469,24 @@ export function ZoomViewport({
       )}
       style={backgroundStyle}
     >
+      {/* Breadcrumb navigation */}
+      {breadcrumbs.length > 0 && (
+        <ZoomBreadcrumbs
+          breadcrumbs={breadcrumbs}
+          onNavigate={handleBreadcrumbNavigate}
+        />
+      )}
+
+      {/* Error notification */}
+      <AnimatePresence>
+        {error && showError && (
+          <ErrorNotification
+            message={error}
+            onDismiss={() => setShowError(false)}
+          />
+        )}
+      </AnimatePresence>
+
       {/* Loading state */}
       <AnimatePresence>
         {isLoading && (
@@ -381,8 +529,11 @@ export function ZoomViewport({
               ease: 'easeOut',
             }}
           >
-            {/* Scene description at top */}
-            <div className="absolute top-4 left-4 right-4 z-10">
+            {/* Scene description at top center (offset if breadcrumbs present) */}
+            <div className={cn(
+              "absolute left-4 right-4 z-10",
+              breadcrumbs.length > 0 ? "top-14" : "top-4"
+            )}>
               <motion.div
                 className="px-4 py-3 rounded-lg bg-void/70 backdrop-blur-sm border border-surface/30 max-w-lg mx-auto"
                 initial={{ opacity: 0, y: -10 }}
@@ -405,7 +556,10 @@ export function ZoomViewport({
             {/* Memory fragment - subtle display */}
             {scene.memoryFragment && (
               <motion.div
-                className="absolute top-20 right-4 z-10 max-w-[200px]"
+                className={cn(
+                  "absolute right-4 z-10 max-w-[200px]",
+                  breadcrumbs.length > 0 ? "top-28" : "top-20"
+                )}
                 initial={{ opacity: 0, x: 10 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.8 }}
@@ -419,13 +573,16 @@ export function ZoomViewport({
             )}
 
             {/* Scene elements */}
-            <div className="absolute inset-0 pt-20 pb-16">
+            <div className={cn(
+              "absolute inset-0 pb-16",
+              breadcrumbs.length > 0 ? "pt-28" : "pt-20"
+            )}>
               {scene.elements.map((element, index) => (
                 <SceneElementButton
                   key={element.id}
                   element={element}
                   index={index}
-                  onClick={() => onElementClick?.(element)}
+                  onClick={() => handleElementClick(element)}
                   onNativeDragStart={handleElementDragStart(element)}
                 />
               ))}
@@ -451,8 +608,8 @@ export function ZoomViewport({
               </div>
             </motion.div>
 
-            {/* Ascend button */}
-            {onZoomOut && (
+            {/* Ascend button - only show when we can zoom out */}
+            {canZoomOut && (
               <motion.button
                 className={cn(
                   'absolute bottom-4 right-4 z-10',
@@ -463,7 +620,7 @@ export function ZoomViewport({
                   'transition-colors duration-200',
                   'flex items-center gap-2'
                 )}
-                onClick={onZoomOut}
+                onClick={zoomOut}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}

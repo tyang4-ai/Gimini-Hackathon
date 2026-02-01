@@ -8,6 +8,7 @@
     "test:imagen": "tsx src/test-imagen.ts",
     "test:veo": "tsx src/test-veo.ts",
     "generate:primordials": "tsx src/generate-primordials.ts",
+    "generate:milestones": "tsx src/generate-milestones.ts",
     "test:all": "npm run test:flash && npm run test:imagen && npm run test:veo"
   },
   "dependencies": {

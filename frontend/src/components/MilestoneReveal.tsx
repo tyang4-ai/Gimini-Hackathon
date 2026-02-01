@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import type { Element } from '@/types';
+import { useSoundEffect } from '@/hooks/useSound';
 import { cn } from '@/utils/cn';
 
 interface MilestoneRevealProps {
@@ -28,6 +29,9 @@ export function MilestoneReveal({
   const [phase, setPhase] = useState<'dim' | 'blur' | 'sharpen' | 'glow'>('dim');
   const [showWhisper, setShowWhisper] = useState(false);
 
+  // Sound effects
+  const play = useSoundEffect();
+
   useEffect(() => {
     if (!isVisible) {
       // Reset state when hidden
@@ -35,6 +39,9 @@ export function MilestoneReveal({
       setShowWhisper(false);
       return;
     }
+
+    // Play milestone sound when reveal becomes visible
+    play('milestone');
 
     // Animation timeline
     const timers: NodeJS.Timeout[] = [];
@@ -59,7 +66,7 @@ export function MilestoneReveal({
     return () => {
       timers.forEach(timer => clearTimeout(timer));
     };
-  }, [isVisible, onComplete]);
+  }, [isVisible, onComplete, play]);
 
   // Calculate blur based on phase
   const getBlur = () => {

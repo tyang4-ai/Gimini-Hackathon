@@ -3,6 +3,7 @@
 import { motion } from 'framer-motion';
 import type { Element } from '@/types';
 import { cn } from '@/utils/cn';
+import { INTERMEDIATE_ELEMENTS } from '@/lib/elements';
 
 interface ElementCardProps {
   element: Element;
@@ -136,17 +137,36 @@ export function ElementCard({
       {showWhisper && element.whisper && (
         <motion.span
           className={cn(
-            'absolute -bottom-10 left-1/2 -translate-x-1/2',
+            'absolute left-1/2 -translate-x-1/2',
             'whitespace-nowrap font-whisper italic',
             'text-text-whisper/80',
             sizeClasses.whisper,
-            'max-w-[150px] truncate text-center'
+            'max-w-[150px] truncate text-center',
+            // Adjust position based on whether pathway text will show
+            element.category === 'intermediate' ? '-bottom-10' : '-bottom-10'
           )}
           initial={{ opacity: 0, y: -5 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.1 }}
         >
           {element.whisper}
+        </motion.span>
+      )}
+
+      {/* Pathway text for intermediate elements */}
+      {showWhisper && element.category === 'intermediate' && INTERMEDIATE_ELEMENTS[element.id]?.pathwayText && (
+        <motion.span
+          className={cn(
+            'absolute -bottom-[52px] left-1/2 -translate-x-1/2',
+            'whitespace-nowrap font-whisper italic',
+            'text-gold/80 text-[9px]',
+            'max-w-[180px] truncate text-center'
+          )}
+          initial={{ opacity: 0, y: -5 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.2 }}
+        >
+          {INTERMEDIATE_ELEMENTS[element.id].pathwayText}
         </motion.span>
       )}
 
@@ -187,6 +207,25 @@ export function ElementCard({
             }}
           />
         </motion.div>
+      )}
+
+      {/* Intermediate pulsing gold glow effect */}
+      {element.category === 'intermediate' && (
+        <motion.div
+          className="absolute inset-0 rounded-xl pointer-events-none"
+          animate={{
+            boxShadow: [
+              '0 0 8px rgba(255, 214, 107, 0.2)',
+              '0 0 16px rgba(255, 214, 107, 0.4)',
+              '0 0 8px rgba(255, 214, 107, 0.2)',
+            ],
+          }}
+          transition={{
+            duration: 2.5,
+            repeat: Infinity,
+            ease: 'easeInOut',
+          }}
+        />
       )}
       </motion.div>
     </div>

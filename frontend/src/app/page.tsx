@@ -1,16 +1,28 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore, useDiscoveredElements } from '@/stores/gameStore';
 import { ElementCard } from '@/components/ElementCard';
 import { CombineZone } from '@/components/CombineZone';
 import { ZoomViewport } from '@/components/ZoomViewport';
+import { MilestoneReveal } from '@/components/MilestoneReveal';
+import { EvolutionPlayer } from '@/components/EvolutionPlayer';
+import { ParticleField } from '@/components/ui/ParticleField';
 import { cn } from '@/utils/cn';
 import type { Element, SceneElement, ZoomResponse, DepthTier } from '@/types';
 
 // Group primordials by their category for display
 const PRIMORDIAL_GROUPS = ['matter', 'senses', 'abstract'] as const;
+
+// Evolution state interface
+interface EvolutionState {
+  milestoneId: string;
+  milestoneName: string;
+  isGenerating: boolean;
+  videoUrl?: string;
+  isPlayerOpen: boolean;
+}
 
 export default function GamePage() {
   const {
@@ -24,6 +36,10 @@ export default function GamePage() {
     setCurrentScene,
     pushZoomPath,
     popZoomPath,
+    isRevealing,
+    revealElement,
+    startReveal,
+    endReveal,
   } = useGameStore();
 
   const discovered = useDiscoveredElements();
@@ -31,6 +47,10 @@ export default function GamePage() {
   const [isZoomLoading, setIsZoomLoading] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isMobile, setIsMobile] = useState(false);
+
+  // Evolution tracking state
+  const [evolution, setEvolution] = useState<EvolutionState | null>(null);
+  const evolutionPollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // Check for mobile viewport
   useEffect(() => {
@@ -111,11 +131,122 @@ export default function GamePage() {
     popZoomPath();
   }, [popZoomPath]);
 
-  // Handle combine result
-  const handleCombineResult = useCallback((element: Element) => {
-    // Could trigger special effects or auto-zoom for milestones
-    console.log('Combined:', element.name);
+  // Cleanup evolution polling on unmount
+  useEffect(() => {
+    return () => {
+      if (evolutionPollingRef.current) {
+        clearInterval(evolutionPollingRef.current);
+      }
+    };
   }, []);
+
+  // Start evolution generation for a milestone
+  const startEvolution = useCallback(async (milestone: Element) => {
+    if (milestone.category !== 'milestone') return;
+
+    setEvolution({
+      milestoneId: milestone.id,
+      milestoneName: milestone.name,
+      isGenerating: true,
+      isPlayerOpen: false,
+    });
+
+    try {
+      // Start the evolution job via /api/evolution
+      const response = await fetch('/api/evolution', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ milestoneId: milestone.id }),
+      });
+
+      const data = await response.json();
+
+      if (!data.success || !data.operationName) {
+        console.error('Failed to start evolution:', data.error);
+        setEvolution(null);
+        return;
+      }
+
+      // Poll for evolution status using operationName
+      const operationName = data.operationName;
+      evolutionPollingRef.current = setInterval(async () => {
+        try {
+          const statusResponse = await fetch(`/api/evolution?operationName=${encodeURIComponent(operationName)}`);
+          const statusData = await statusResponse.json();
+
+          if (statusData.status === 'complete' && statusData.videoUrl) {
+            // Evolution complete - update state with video URL
+            setEvolution((prev) =>
+              prev
+                ? {
+                    ...prev,
+                    isGenerating: false,
+                    videoUrl: statusData.videoUrl,
+                  }
+                : null
+            );
+
+            // Stop polling
+            if (evolutionPollingRef.current) {
+              clearInterval(evolutionPollingRef.current);
+              evolutionPollingRef.current = null;
+            }
+          } else if (statusData.status === 'failed') {
+            console.error('Evolution failed:', statusData.error);
+            setEvolution(null);
+
+            if (evolutionPollingRef.current) {
+              clearInterval(evolutionPollingRef.current);
+              evolutionPollingRef.current = null;
+            }
+          }
+          // Keep polling if still 'generating'
+        } catch (error) {
+          console.error('Error polling evolution status:', error);
+        }
+      }, 5000); // Poll every 5 seconds (Veo takes 45-60 seconds)
+    } catch (error) {
+      console.error('Error starting evolution:', error);
+      setEvolution(null);
+    }
+  }, []);
+
+  // Handle milestone reveal completion
+  const handleRevealComplete = useCallback(() => {
+    const element = revealElement;
+    endReveal();
+
+    // After reveal animation completes, start evolution for milestones
+    if (element && element.category === 'milestone') {
+      startEvolution(element);
+    }
+  }, [revealElement, endReveal, startEvolution]);
+
+  // Handle evolution player close
+  const handleEvolutionClose = useCallback(() => {
+    setEvolution((prev) =>
+      prev ? { ...prev, isPlayerOpen: false } : null
+    );
+  }, []);
+
+  // Handle clicking on the evolution ready badge
+  const handleEvolutionOpen = useCallback(() => {
+    setEvolution((prev) =>
+      prev ? { ...prev, isPlayerOpen: true } : null
+    );
+  }, []);
+
+  // Handle combine result - this receives the result info from CombineZone
+  // Note: CombineZone passes just the element, but we need isMilestone and isFirstDiscovery
+  // We'll modify this to accept extended info or check directly
+  const handleCombineResult = useCallback((element: Element, isMilestone?: boolean, isFirstDiscovery?: boolean) => {
+    console.log('Combined:', element.name, { isMilestone, isFirstDiscovery });
+
+    // If it's a milestone and first discovery, trigger the reveal animation
+    if (isMilestone && isFirstDiscovery && element.category === 'milestone') {
+      startReveal(element);
+    }
+  }, [startReveal]);
 
   // Group discovered elements by depth for display
   const discoveredByDepth = discovered.reduce((acc, el) => {
@@ -133,9 +264,20 @@ export default function GamePage() {
   };
 
   return (
-    <div className="min-h-screen bg-void flex flex-col">
+    <div className="min-h-screen bg-void flex flex-col relative">
+      {/* Ambient particle starfield background */}
+      <div className="fixed inset-0 z-0 overflow-hidden">
+        <ParticleField
+          particleCount={40}
+          colors={['#ffd66b', '#7f5af0', '#5bc0be']}
+          minSize={1}
+          maxSize={2.5}
+          speed={0.3}
+        />
+      </div>
+
       {/* Header */}
-      <header className="h-14 border-b border-surface/30 bg-void/90 backdrop-blur-sm px-4 flex items-center justify-between shrink-0">
+      <header className="h-14 border-b border-surface/30 bg-void/90 backdrop-blur-sm px-4 flex items-center justify-between shrink-0 relative z-10">
         {/* Logo and title */}
         <div className="flex items-center gap-3">
           {/* Mobile sidebar toggle */}
@@ -199,7 +341,7 @@ export default function GamePage() {
       </header>
 
       {/* Main content */}
-      <div className="flex-1 flex overflow-hidden">
+      <div className="flex-1 flex overflow-hidden relative z-10">
         {/* Sidebar */}
         <AnimatePresence>
           {(isSidebarOpen || !isMobile) && (
@@ -312,10 +454,7 @@ export default function GamePage() {
           {/* Zoom Viewport */}
           <div className="flex-1 min-h-0">
             <ZoomViewport
-              scene={currentScene}
               onElementClick={handleZoomIntoElement}
-              onZoomOut={zoomPath.scenes.length > 0 ? handleZoomOut : undefined}
-              isLoading={isZoomLoading}
               className="h-full"
             />
           </div>
@@ -327,6 +466,29 @@ export default function GamePage() {
           />
         </main>
       </div>
+
+      {/* Milestone Reveal Overlay */}
+      {revealElement && (
+        <MilestoneReveal
+          element={revealElement}
+          isVisible={isRevealing}
+          onComplete={handleRevealComplete}
+        />
+      )}
+
+      {/* Evolution Player - handles generating indicator, ready badge, and video modal */}
+      {evolution && (
+        <div onClick={evolution.videoUrl && !evolution.isPlayerOpen ? handleEvolutionOpen : undefined}>
+          <EvolutionPlayer
+            milestoneId={evolution.milestoneId}
+            milestoneName={evolution.milestoneName}
+            videoUrl={evolution.videoUrl}
+            isGenerating={evolution.isGenerating}
+            isOpen={evolution.isPlayerOpen}
+            onClose={handleEvolutionClose}
+          />
+        </div>
+      )}
     </div>
   );
 }

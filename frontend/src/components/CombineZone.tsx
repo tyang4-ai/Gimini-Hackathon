@@ -3,12 +3,14 @@
 import { useState, useCallback, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore } from '@/stores/gameStore';
+import { useCombine } from '@/hooks/useCombine';
+import { useSoundEffect } from '@/hooks/useSound';
 import { cn } from '@/utils/cn';
 import { ElementCard } from './ElementCard';
-import type { Element, CombineRequest, CombineResponse } from '@/types';
+import type { Element } from '@/types';
 
 interface CombineZoneProps {
-  onCombine?: (result: Element) => void;
+  onCombine?: (result: Element, isMilestone: boolean, isFirstDiscovery: boolean) => void;
   className?: string;
 }
 
@@ -17,15 +19,18 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
     combineSlots,
     addToSlot,
     clearSlots,
-    discoverElement,
-    contextTokens,
     primordials,
     discoveredElements,
+    showHint,
   } = useGameStore();
 
-  const [isLoading, setIsLoading] = useState(false);
+  // Use the useCombine hook for API calls and state management
+  const { combine, isLoading, error } = useCombine();
+
+  // Sound effects
+  const play = useSoundEffect();
+
   const [result, setResult] = useState<Element | null>(null);
-  const [hint, setHint] = useState<string | null>(null);
   const [dragOverSlot, setDragOverSlot] = useState<0 | 1 | null>(null);
 
   // Auto-trigger combine when both slots are filled
@@ -42,47 +47,21 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
 
     if (!elementA || !elementB) return;
 
-    setIsLoading(true);
-    setHint(null);
+    const combineResult = await combine(elementA.id, elementB.id);
 
-    try {
-      const request: CombineRequest = {
-        elementA: elementA.id,
-        elementB: elementB.id,
-        contextTokens,
-      };
+    if (combineResult) {
+      const { element, isMilestone, isFirstDiscovery } = combineResult;
+      setResult(element);
 
-      const response = await fetch('/api/combine', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(request),
-      });
-
-      const data: CombineResponse = await response.json();
-
-      if (data.success && data.result) {
-        const newElement = data.result.element;
-        setResult(newElement);
-
-        // Add to discovered elements if first discovery
-        if (data.result.isFirstDiscovery) {
-          discoverElement(newElement);
-        }
-
-        // Show hint if present
-        if (data.result.hint) {
-          setHint(data.result.hint);
-        }
-
-        // Notify parent
-        onCombine?.(newElement);
+      // Play appropriate sound
+      if (isMilestone) {
+        play('milestone');
       } else {
-        console.error('Combine failed:', data.error);
+        play('combine');
       }
-    } catch (error) {
-      console.error('Combine API error:', error);
-    } finally {
-      setIsLoading(false);
+
+      // Notify parent with milestone and discovery info
+      onCombine?.(element, isMilestone, isFirstDiscovery);
     }
   };
 
@@ -127,7 +106,6 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
   const handleClear = useCallback(() => {
     clearSlots();
     setResult(null);
-    setHint(null);
   }, [clearSlots]);
 
   return (
@@ -230,7 +208,7 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
 
         {/* Hint tooltip */}
         <AnimatePresence>
-          {hint && (
+          {showHint && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
@@ -242,7 +220,26 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
                 'shadow-lg shadow-violet/20'
               )}
             >
-              {hint}
+              {showHint}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* Error tooltip */}
+        <AnimatePresence>
+          {error && (
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 10 }}
+              className={cn(
+                'absolute -bottom-12 left-1/2 -translate-x-1/2',
+                'bg-red-500/90 text-text-primary text-xs px-3 py-1.5 rounded-lg',
+                'whitespace-nowrap',
+                'shadow-lg shadow-red-500/20'
+              )}
+            >
+              {error}
             </motion.div>
           )}
         </AnimatePresence>
