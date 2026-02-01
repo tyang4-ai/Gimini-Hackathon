@@ -125,6 +125,12 @@ export interface ZoomRequest {
   elementId: string;
   currentDepth: DepthTier;
   contextSummary: string;        // Compressed context for callbacks
+  // Optional: scene element data for dynamically generated elements
+  sceneElementData?: {
+    name: string;
+    emoji: string;
+    whisper: string;
+  };
 }
 
 export interface ZoomResponse {

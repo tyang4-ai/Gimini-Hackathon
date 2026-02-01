@@ -1,12 +1,12 @@
 import { useState, useCallback, useMemo } from 'react';
 import { useGameStore, useZoomBreadcrumbs } from '@/stores/gameStore';
 import { DEMO_MODE, getDemoScene } from '@/lib/demoData';
-import type { ZoomScene, ZoomResponse, DepthTier } from '@/types';
+import type { ZoomScene, ZoomResponse, DepthTier, SceneElement } from '@/types';
 
 // === RESULT INTERFACE ===
 
 export interface UseZoomResult {
-  zoomInto: (elementId: string) => Promise<ZoomScene | null>;
+  zoomInto: (elementId: string, sceneElement?: SceneElement) => Promise<ZoomScene | null>;
   zoomOut: () => void;
   zoomToScene: (sceneIndex: number) => void;
   isLoading: boolean;
@@ -51,7 +51,15 @@ export function useZoom(): UseZoomResult {
 
   // Build context summary from discovered elements for API calls
   const contextSummary = useMemo(() => {
-    const elements = Array.from(discoveredElements.values());
+    // Handle case where discoveredElements might not be a proper Map
+    let elements: any[];
+    if (discoveredElements instanceof Map) {
+      elements = Array.from(discoveredElements.values());
+    } else if (Array.isArray(discoveredElements)) {
+      elements = discoveredElements.map(([, value]) => value);
+    } else {
+      elements = [];
+    }
     if (elements.length === 0) return '';
 
     // Create a brief summary of discovered elements for context callbacks
@@ -66,7 +74,7 @@ export function useZoom(): UseZoomResult {
 
   // Zoom into an element
   const zoomInto = useCallback(
-    async (elementId: string): Promise<ZoomScene | null> => {
+    async (elementId: string, sceneElement?: SceneElement): Promise<ZoomScene | null> => {
       setIsLoading(true);
       setError(null);
 
@@ -113,6 +121,12 @@ export function useZoom(): UseZoomResult {
             elementId,
             currentDepth,
             contextSummary,
+            // Pass scene element data for dynamically generated elements
+            sceneElementData: sceneElement ? {
+              name: sceneElement.name,
+              emoji: sceneElement.emoji,
+              whisper: sceneElement.whisper,
+            } : undefined,
           }),
         });
 

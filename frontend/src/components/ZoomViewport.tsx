@@ -415,7 +415,8 @@ export function ZoomViewport({
     async (element: SceneElement) => {
       if (element.canZoomInto) {
         play('zoom');
-        await zoomInto(element.id);
+        // Pass full element data for dynamically generated scene elements
+        await zoomInto(element.id, element);
       }
       // Always notify parent of click (for combine/other functionality)
       onElementClick?.(element);

@@ -128,8 +128,8 @@ Respond with a JSON object exactly matching this schema:
    - Fire: "linear-gradient(135deg, #ff6b35 0%, #ffc145 50%, #2b1f4f 100%)"
    - Water: "linear-gradient(135deg, #00a8e8 0%, #1c2541 100%)"
    - Cosmic: "linear-gradient(135deg, #1c2541 0%, #241332 50%, #2b1f4f 100%)"
-5. **Context Callback**: 10% chance to include. Should reference something specific from contextSummary.
-6. **Memory Fragment**: 20% chance to include. A cryptic hint about the universe's nature.
+5. **Context Callback**: Set to null. (Disabled for now)
+6. **Memory Fragment**: Set to null. (Disabled for now - keeps response short)
 
 ## Examples of Scene Descriptions
 

@@ -80,6 +80,12 @@ export default function GamePage() {
           elementId: element.id,
           currentDepth: currentScene?.depth || 'I',
           contextSummary: `Zooming into ${element.name} from depth ${currentScene?.depth || 'I'}`,
+          // Pass scene element data for dynamically generated elements
+          sceneElementData: {
+            name: element.name,
+            emoji: element.emoji,
+            whisper: element.whisper,
+          },
         }),
       });
 

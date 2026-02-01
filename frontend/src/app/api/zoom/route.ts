@@ -70,7 +70,7 @@ const SCENE_SCHEMA = {
     memoryFragment: {
       type: SchemaType.STRING as const,
       nullable: true,
-      description: 'Optional short lore hint, max 30 words (20% chance to include)',
+      description: 'Optional VERY SHORT lore hint (1-2 sentences, max 20 words). Set to null 80% of the time.',
     },
     contextCallback: {
       type: SchemaType.OBJECT as const,
@@ -103,7 +103,7 @@ const visitedScenes: string[] = [];
 export async function POST(request: NextRequest): Promise<NextResponse<ZoomResponse>> {
   try {
     const body: ZoomRequest = await request.json();
-    const { elementId, currentDepth, contextSummary } = body;
+    const { elementId, currentDepth, contextSummary, sceneElementData } = body;
 
     // Validate input
     if (!elementId) {
@@ -113,8 +113,21 @@ export async function POST(request: NextRequest): Promise<NextResponse<ZoomRespo
       );
     }
 
-    // Find the element
-    const element = findElementById(elementId);
+    // Find the element - or create a synthetic one from scene data
+    let element = findElementById(elementId);
+
+    if (!element && sceneElementData) {
+      // Create a synthetic element from the scene element data
+      element = {
+        id: elementId,
+        name: sceneElementData.name,
+        emoji: sceneElementData.emoji,
+        whisper: sceneElementData.whisper,
+        category: 'regular' as const,
+        depth: currentDepth || 'I',
+        ancestry: [],
+      };
+    }
 
     if (!element) {
       return NextResponse.json(
@@ -140,8 +153,8 @@ export async function POST(request: NextRequest): Promise<NextResponse<ZoomRespo
         responseMimeType: 'application/json',
         // @ts-expect-error - Gemini SDK types are too strict for enum schemas
         responseSchema: SCENE_SCHEMA,
-        temperature: 0.8, // Slightly lower for more consistent output
-        maxOutputTokens: 2000, // Limit response size
+        temperature: 0.7, // Lower for more consistent output
+        maxOutputTokens: 1500, // Enough for full response
       },
     });
 
@@ -192,12 +205,27 @@ export async function POST(request: NextRequest): Promise<NextResponse<ZoomRespo
     try {
       generatedScene = JSON.parse(cleanedText);
     } catch (parseError) {
-      console.error('Failed to parse zoom response:', cleanedText);
+      console.error('Failed to parse zoom response:', cleanedText.slice(0, 500) + '...');
       return NextResponse.json(
         { success: false, error: 'Failed to parse AI response' },
         { status: 500 }
       );
     }
+
+    // Post-processing validation
+    // Truncate overly long memoryFragment
+    if (generatedScene.memoryFragment && generatedScene.memoryFragment.length > 200) {
+      generatedScene.memoryFragment = generatedScene.memoryFragment.slice(0, 200) + '...';
+    }
+
+    // Validate and fix emoji fields
+    generatedScene.elements = generatedScene.elements.map((el) => ({
+      ...el,
+      // Ensure emoji is a single character or use a fallback
+      emoji: el.emoji && el.emoji.trim().length > 0 && el.emoji.trim().length <= 4
+        ? el.emoji.trim()
+        : '✨',
+    }));
 
     // Generate a unique scene ID
     const sceneId = `scene-${elementId}-${Date.now()}`;

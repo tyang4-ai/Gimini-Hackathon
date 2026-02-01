@@ -323,13 +323,24 @@ export const useGameStore = create<GameStore>()(
 
 // === SELECTORS ===
 
-export const selectDiscoveredCount = (state: GameStore) => state.discoveredElements.size;
-export const selectMilestoneCount = (state: GameStore) => state.milestones.size;
+export const selectDiscoveredCount = (state: GameStore) => {
+  if (state.discoveredElements instanceof Map) return state.discoveredElements.size;
+  if (Array.isArray(state.discoveredElements)) return state.discoveredElements.length;
+  return 0;
+};
+export const selectMilestoneCount = (state: GameStore) => {
+  if (state.milestones instanceof Map) return state.milestones.size;
+  if (Array.isArray(state.milestones)) return state.milestones.length;
+  return 0;
+};
 export const selectZoomDepth = (state: GameStore) => state.zoomPath.scenes.length;
 export const selectCanCombine = (state: GameStore) =>
   state.combineSlots[0] !== null && state.combineSlots[1] !== null;
-export const selectHasDiscovered = (state: GameStore, elementId: string) =>
-  state.discoveredElements.has(elementId);
+export const selectHasDiscovered = (state: GameStore, elementId: string) => {
+  if (state.discoveredElements instanceof Map) return state.discoveredElements.has(elementId);
+  if (Array.isArray(state.discoveredElements)) return state.discoveredElements.some(([id]) => id === elementId);
+  return false;
+};
 
 // === DERIVED DATA ===
 
@@ -353,13 +364,27 @@ export const useZoomScenes = () =>
 // Only use when you need the array form and understand the re-render implications
 export const useDiscoveredElements = () => {
   const map = useGameStore((state) => state.discoveredElements);
-  // Convert Map to array - this will be stable as long as the Map reference is stable
-  return Array.from(map.values());
+  // Handle case where data might not be a proper Map (e.g., from corrupted localStorage)
+  if (map instanceof Map) {
+    return Array.from(map.values());
+  }
+  // If it's an array of entries, convert to values
+  if (Array.isArray(map)) {
+    return map.map(([, value]) => value);
+  }
+  return [];
 };
 
 export const useMilestones = () => {
   const map = useGameStore((state) => state.milestones);
-  return Array.from(map.values());
+  // Handle case where data might not be a proper Map
+  if (map instanceof Map) {
+    return Array.from(map.values());
+  }
+  if (Array.isArray(map)) {
+    return map.map(([, value]) => value);
+  }
+  return [];
 };
 
 export const useZoomBreadcrumbs = () => {

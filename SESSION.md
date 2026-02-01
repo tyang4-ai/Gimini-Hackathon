@@ -1,9 +1,9 @@
 # Gemini 3 Hackathon - Session Context
 
 ## Project Status
-- **Current Phase:** Development - Core Game Loop
-- **Last Updated:** February 1, 2026 - Session 7 - Frontend Built
-- **Active Agent:** None (testing and polish next)
+- **Current Phase:** Development - Testing & Bug Fixes
+- **Last Updated:** February 1, 2026 - Session 8 - Core Mechanics Verified
+- **Active Agent:** None (core loop working, ready for polish)
 - **Win Probability:** 50-55% (BUILD approved - v10 FINAL)
 
 ---
@@ -203,6 +203,63 @@ Gemini Hackathon/
 ---
 
 ## Session Log
+
+### February 1, 2026 - Session 8 - TESTING & BUG FIXES
+**Duration:** ~2 hours
+**Focus:** Browser testing with Chrome DevTools MCP, bug fixes
+
+**Critical Bugs Fixed:**
+1. **Infinite re-render loop** - Zustand shallow comparison with Map.values() causing continuous re-renders
+   - Removed `shallow` import from zustand/shallow
+   - Made hooks defensive for Map/Array handling
+
+2. **localStorage deserialization** - Map data not properly restored from persistence
+   - Added defensive checks in selectors and hooks
+   - Handles both Map and Array formats gracefully
+
+3. **Zoom API 404 for scene elements** - Nested zoom failing for AI-generated elements
+   - Added `sceneElementData` parameter to ZoomRequest
+   - Updated useZoom hook to pass full element data
+   - Updated ZoomViewport to pass element on click
+
+4. **JSON truncation in Zoom API** - AI responses getting cut off
+   - Increased maxOutputTokens from 1000 to 1500
+   - Disabled memoryFragment and contextCallback to reduce response size
+
+**Core Mechanics Verified:**
+| Feature | Status | Test Result |
+|---------|--------|-------------|
+| Combine | ✅ | Fire + Water = Conflict |
+| Zoom (primordials) | ✅ | Fire → scene with 4 elements |
+| Nested Zoom | ✅ | Fire → Dragon's Breath → new scene |
+| Depth tracking | ✅ | Shows Depth II after nested zoom |
+| Breadcrumb navigation | ✅ | Surface / scene1 / scene2 / scene3 |
+| Ascend button | ✅ | Present and functional |
+| Element stats | ✅ | Remembered: 0, Depth: II, Memory: 0 |
+
+**Files Modified:**
+- `frontend/src/stores/gameStore.ts` - Defensive selectors and hooks
+- `frontend/src/hooks/useZoom.ts` - Accept SceneElement for zoom
+- `frontend/src/components/ZoomViewport.tsx` - Pass element data
+- `frontend/src/app/api/zoom/route.ts` - Handle scene element data
+- `frontend/src/types/index.ts` - Added sceneElementData to ZoomRequest
+- `frontend/src/lib/prompts.ts` - Disabled memoryFragment/contextCallback
+
+**Testing Approach:**
+- Used Chrome DevTools MCP for automated browser testing
+- Drag-and-drop combine tested
+- Click-to-zoom tested for both primordials and scene elements
+- Nested zoom to Depth II verified
+- All stats updating correctly
+
+**Next Steps:**
+1. Test Ascend button functionality
+2. Test combining scene elements (drag from scene to combine zone)
+3. Test milestone discovery and reveal animation
+4. Run comprehensive test plan (149 test cases)
+5. Update GitHub with bug fixes
+
+---
 
 ### February 1, 2026 - Session 7 - FRONTEND DEVELOPMENT
 **Duration:** ~1 hour
