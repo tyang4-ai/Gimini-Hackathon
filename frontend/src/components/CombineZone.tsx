@@ -112,8 +112,8 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
     <div
       className={cn(
         'flex items-center justify-center gap-4 h-[120px]',
-        'bg-surface/20 rounded-2xl border border-surface/30',
-        'px-6 backdrop-blur-sm',
+        'bg-surface rounded-2xl border border-border',
+        'px-6 shadow-card',
         className
       )}
     >
@@ -129,7 +129,7 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
 
       {/* Plus operator */}
       <motion.div
-        className="text-3xl font-bold text-text-whisper/60"
+        className="text-3xl font-bold text-text-secondary"
         animate={{ opacity: combineSlots[0] && combineSlots[1] ? 1 : 0.4 }}
       >
         +
@@ -147,7 +147,7 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
 
       {/* Equals sign */}
       <motion.div
-        className="text-3xl font-bold text-text-whisper/60"
+        className="text-3xl font-bold text-text-secondary"
         animate={{
           opacity: isLoading || result ? 1 : 0.4,
           scale: isLoading ? [1, 1.1, 1] : 1,
@@ -170,10 +170,11 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
               exit={{ opacity: 0, scale: 0.5 }}
               className="w-16 h-16 flex items-center justify-center"
             >
+              {/* Apple-style thin spinner */}
               <motion.div
-                className="w-10 h-10 border-4 border-teal/30 border-t-teal rounded-full"
+                className="w-8 h-8 border-2 border-border border-t-accent-blue rounded-full"
                 animate={{ rotate: 360 }}
-                transition={{ repeat: Infinity, duration: 1, ease: 'linear' }}
+                transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
               />
             </motion.div>
           ) : result ? (
@@ -184,8 +185,8 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
               exit={{ opacity: 0, scale: 0.5 }}
               transition={{
                 type: 'spring',
-                stiffness: 300,
-                damping: 20,
+                stiffness: 200,
+                damping: 25,
               }}
             >
               <ElementCard element={result} size="md" draggable={true} />
@@ -197,8 +198,8 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
               animate={{ opacity: 1 }}
               className={cn(
                 'w-16 h-16 rounded-xl border-2 border-dashed',
-                'border-surface/40 flex items-center justify-center',
-                'text-text-whisper/40 text-2xl'
+                'border-border bg-white flex items-center justify-center',
+                'text-text-muted text-2xl'
               )}
             >
               ?
@@ -211,13 +212,14 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
           {showHint && (
             <motion.div
               initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
+              animate={{ opacity: 0.8, y: 0 }}
               exit={{ opacity: 0, y: 10 }}
               className={cn(
                 'absolute -bottom-12 left-1/2 -translate-x-1/2',
-                'bg-violet/90 text-text-primary text-xs px-3 py-1.5 rounded-lg',
+                'bg-white/90 backdrop-blur-sm border border-gold/30',
+                'text-gold text-xs px-3 py-1.5 rounded-lg',
                 'whitespace-nowrap font-whisper italic',
-                'shadow-lg shadow-violet/20'
+                'shadow-card'
               )}
             >
               {showHint}
@@ -234,9 +236,9 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
               exit={{ opacity: 0, y: 10 }}
               className={cn(
                 'absolute -bottom-12 left-1/2 -translate-x-1/2',
-                'bg-red-500/90 text-text-primary text-xs px-3 py-1.5 rounded-lg',
+                'bg-rose text-white text-xs px-3 py-1.5 rounded-lg',
                 'whitespace-nowrap',
-                'shadow-lg shadow-red-500/20'
+                'shadow-elevated'
               )}
             >
               {error}
@@ -255,13 +257,14 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
             onClick={handleClear}
             className={cn(
               'ml-4 px-3 py-1.5 rounded-lg',
-              'bg-surface/40 border border-surface/60',
-              'text-text-whisper text-sm',
-              'hover:bg-surface/60 hover:border-teal/40',
-              'transition-colors duration-200'
+              'bg-white border border-border',
+              'text-text-secondary text-sm',
+              'hover:bg-surface hover:border-accent-blue/40',
+              'transition-colors duration-200',
+              'shadow-card'
             )}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            whileHover={{ scale: 1.02 }}
+            whileTap={{ scale: 0.98 }}
           >
             Clear
           </motion.button>
@@ -298,27 +301,27 @@ function DropSlot({
         'flex items-center justify-center',
         'transition-all duration-200',
         element
-          ? 'border-transparent'
+          ? 'border-transparent bg-transparent'
           : isDragOver
-          ? 'border-teal border-solid bg-teal/10 shadow-glow-teal'
-          : 'border-dashed border-surface/40 hover:border-teal/50'
+          ? 'border-accent-blue border-solid bg-accent-blue/5 shadow-accent-teal'
+          : 'border-dashed border-border bg-white hover:border-accent-blue/50'
       )}
       onDragOver={onDragOver}
       onDragLeave={onDragLeave}
       onDrop={onDrop}
       animate={{
-        scale: isDragOver ? 1.1 : 1,
+        scale: isDragOver ? 1.05 : 1,
       }}
       transition={{
         type: 'spring',
-        stiffness: 400,
-        damping: 25,
+        stiffness: 200,
+        damping: 30,
       }}
     >
       {element ? (
         <ElementCard element={element} size="md" draggable={false} />
       ) : (
-        <span className="text-text-whisper/30 text-xs">Drop here</span>
+        <span className="text-text-muted text-xs">Drop here</span>
       )}
     </motion.div>
   );

@@ -270,29 +270,23 @@ export default function GamePage() {
   };
 
   return (
-    <div className="min-h-screen bg-void flex flex-col relative">
-      {/* Ambient particle starfield background */}
-      <div className="fixed inset-0 z-0 overflow-hidden">
-        <ParticleField
-          particleCount={40}
-          colors={['#ffd66b', '#7f5af0', '#5bc0be']}
-          minSize={1}
-          maxSize={2.5}
-          speed={0.3}
-        />
+    <div className="min-h-screen bg-white flex flex-col relative">
+      {/* Subtle background particle effect */}
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-30">
+        <ParticleField particleCount={30} speed={0.3} />
       </div>
 
-      {/* Header */}
-      <header className="h-14 border-b border-surface/30 bg-void/90 backdrop-blur-sm px-4 flex items-center justify-between shrink-0 relative z-10">
+      {/* Header - Apple-style frosted glass */}
+      <header className="h-14 border-b border-border bg-white/80 backdrop-blur-xl px-4 flex items-center justify-between shrink-0 relative z-10">
         {/* Logo and title */}
         <div className="flex items-center gap-3">
           {/* Mobile sidebar toggle */}
           {isMobile && (
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-lg bg-surface/30 hover:bg-surface/50 transition-colors"
+              className="p-2 rounded-lg bg-surface hover:bg-surface/80 transition-colors"
             >
-              <span className="text-lg">{isSidebarOpen ? '✕' : '☰'}</span>
+              <span className="text-lg text-text-primary">{isSidebarOpen ? '✕' : '☰'}</span>
             </button>
           )}
 
@@ -301,8 +295,8 @@ export default function GamePage() {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <span className="text-gold">THE</span>{' '}
-            <span className="text-violet">MEMORY</span>
+            <span className="text-accent-orange">THE</span>{' '}
+            <span className="text-accent-violet">MEMORY</span>
           </motion.h1>
         </div>
 
@@ -310,7 +304,7 @@ export default function GamePage() {
         <div className="flex items-center gap-6">
           {/* Discovery count */}
           <div className="flex items-center gap-2">
-            <span className="text-text-muted text-sm">Remembered:</span>
+            <span className="text-text-secondary text-sm">Remembered:</span>
             <motion.span
               className="font-display font-semibold text-teal"
               key={totalDiscoveries}
@@ -323,7 +317,7 @@ export default function GamePage() {
 
           {/* Depth indicator */}
           <div className="flex items-center gap-2">
-            <span className="text-text-muted text-sm">Depth:</span>
+            <span className="text-text-secondary text-sm">Depth:</span>
             <span className={cn(
               'font-display font-semibold',
               deepestDepth === 'I' && 'text-teal',
@@ -338,8 +332,8 @@ export default function GamePage() {
 
           {/* Token usage - hidden on very small screens */}
           <div className="hidden sm:flex items-center gap-2">
-            <span className="text-text-muted text-sm">Memory:</span>
-            <span className="font-display font-semibold text-text-whisper">
+            <span className="text-text-secondary text-sm">Memory:</span>
+            <span className="font-display font-semibold text-teal">
               {formatTokens(contextTokens)}
             </span>
           </div>
@@ -348,13 +342,13 @@ export default function GamePage() {
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden relative z-10">
-        {/* Sidebar */}
+        {/* Sidebar - Apple-style light gray */}
         <AnimatePresence>
           {(isSidebarOpen || !isMobile) && (
             <motion.aside
               className={cn(
-                'w-[280px] shrink-0 border-r border-surface/30',
-                'bg-void/50 backdrop-blur-sm overflow-y-auto',
+                'w-[280px] shrink-0 border-r border-border',
+                'bg-surface overflow-y-auto',
                 'flex flex-col',
                 isMobile && 'absolute inset-y-14 left-0 z-40'
               )}
@@ -364,7 +358,7 @@ export default function GamePage() {
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
               {/* Primordials section */}
-              <div className="p-4 border-b border-surface/20">
+              <div className="p-4 border-b border-border">
                 <h2 className="font-display text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">
                   Primordials
                 </h2>
@@ -407,10 +401,10 @@ export default function GamePage() {
                         <div key={depth}>
                           <h3 className={cn(
                             'text-xs font-display font-medium mb-2',
-                            depth === 'II' && 'text-violet/80',
-                            depth === 'III' && 'text-rose/80',
-                            depth === 'IV' && 'text-gold/80',
-                            depth === 'V+' && 'text-ice/80',
+                            depth === 'II' && 'text-violet',
+                            depth === 'III' && 'text-rose',
+                            depth === 'IV' && 'text-gold',
+                            depth === 'V+' && 'text-ice',
                           )}>
                             Depth {depth}
                           </h3>
@@ -433,7 +427,7 @@ export default function GamePage() {
               </div>
 
               {/* Evolution status - placeholder for future implementation */}
-              <div className="p-4 border-t border-surface/20">
+              <div className="p-4 border-t border-border">
                 <div className="text-xs text-text-muted font-whisper italic text-center">
                   {zoomPath.scenes.length > 0
                     ? `Currently at depth ${zoomPath.scenes.length}`
@@ -447,7 +441,7 @@ export default function GamePage() {
         {/* Mobile overlay */}
         {isMobile && isSidebarOpen && (
           <motion.div
-            className="absolute inset-0 bg-void/60 z-30"
+            className="absolute inset-0 bg-black/20 z-30"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
@@ -456,7 +450,7 @@ export default function GamePage() {
         )}
 
         {/* Main viewport area */}
-        <main className="flex-1 flex flex-col p-4 gap-4 overflow-hidden">
+        <main className="flex-1 flex flex-col p-4 gap-4 overflow-hidden bg-white">
           {/* Zoom Viewport */}
           <div className="flex-1 min-h-0">
             <ZoomViewport

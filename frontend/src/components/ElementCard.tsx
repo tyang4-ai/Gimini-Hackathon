@@ -35,26 +35,31 @@ const sizeConfig = {
   },
 } as const;
 
+// Apple-style light theme category styles
 const categoryStyles = {
   primordial: {
-    base: 'border-teal/60 bg-void/80',
-    glow: 'shadow-glow-teal',
-    hoverGlow: '0 0 25px rgba(91, 192, 190, 0.6)',
+    base: 'bg-white border-teal/60',
+    shadow: 'shadow-card',
+    hoverShadow: '0 4px 16px rgba(0, 199, 190, 0.2)',
+    accentBg: 'bg-teal/5',
   },
   milestone: {
-    base: 'border-gold/70 bg-void/90',
-    glow: 'shadow-glow-gold',
-    hoverGlow: '0 0 30px rgba(255, 214, 107, 0.7)',
+    base: 'bg-white border-gold/70',
+    shadow: 'shadow-card',
+    hoverShadow: '0 4px 16px rgba(255, 149, 0, 0.25)',
+    accentBg: 'bg-gold/5',
   },
   intermediate: {
-    base: 'border-violet/50 bg-void/70',
-    glow: 'shadow-glow-violet',
-    hoverGlow: '0 0 25px rgba(127, 90, 240, 0.6)',
+    base: 'bg-white border-violet/50',
+    shadow: 'shadow-card',
+    hoverShadow: '0 4px 16px rgba(175, 82, 222, 0.2)',
+    accentBg: 'bg-violet/5',
   },
   regular: {
-    base: 'border-surface/40 bg-surface/30',
-    glow: '',
-    hoverGlow: '0 0 15px rgba(91, 192, 190, 0.3)',
+    base: 'bg-white border-border',
+    shadow: 'shadow-card',
+    hoverShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
+    accentBg: 'bg-surface',
   },
 } as const;
 
@@ -84,149 +89,124 @@ export function ElementCard({
         className={cn(
           // Base styles
           'relative flex flex-col items-center justify-center',
-          'rounded-xl border-2 cursor-pointer select-none',
-          'transition-colors duration-200',
+          'rounded-xl border cursor-pointer select-none',
+          'transition-all duration-200',
           sizeClasses.container,
           // Category-specific styles
           categoryClasses.base,
-          categoryClasses.glow,
-          // Milestone special treatment
-          element.category === 'milestone' && 'ring-1 ring-gold/30',
+          categoryClasses.shadow,
+          categoryClasses.accentBg,
+          // Milestone special treatment - subtle ring
+          element.category === 'milestone' && 'ring-1 ring-gold/20',
           className
         )}
-      whileHover={{
-        scale: 1.08,
-        boxShadow: categoryClasses.hoverGlow,
-      }}
-      whileTap={{ scale: 0.95 }}
-      whileDrag={{ scale: 1.1, opacity: 0.8 }}
-      initial={{ opacity: 0, scale: 0.8 }}
-      animate={{ opacity: 1, scale: 1 }}
-      transition={{
-        type: 'spring',
-        stiffness: 400,
-        damping: 25,
-      }}
-    >
-      {/* Emoji */}
-      <span
-        className={cn(
-          sizeClasses.emoji,
-          'leading-none drop-shadow-md',
-          element.category === 'milestone' && 'drop-shadow-[0_0_8px_rgba(255,214,107,0.5)]'
-        )}
-        role="img"
-        aria-label={element.name}
+        whileHover={{
+          scale: 1.08,
+          boxShadow: categoryClasses.hoverShadow,
+        }}
+        whileTap={{ scale: 0.98 }}
+        whileDrag={{ scale: 1.05, opacity: 0.9 }}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{
+          type: 'spring',
+          stiffness: 200,
+          damping: 30,
+        }}
       >
-        {element.emoji}
-      </span>
+        {/* Emoji */}
+        <span
+          className={cn(
+            sizeClasses.emoji,
+            'leading-none',
+          )}
+          role="img"
+          aria-label={element.name}
+        >
+          {element.emoji}
+        </span>
 
-      {/* Element name - shown below card for better layout */}
-      <span
-        className={cn(
-          'absolute -bottom-5 left-1/2 -translate-x-1/2',
-          'whitespace-nowrap font-display',
-          'text-text-primary/90',
-          sizeClasses.name
+        {/* Element name - shown below card for better layout */}
+        <span
+          className={cn(
+            'absolute -bottom-5 left-1/2 -translate-x-1/2',
+            'whitespace-nowrap font-display',
+            'text-text-primary',
+            sizeClasses.name
+          )}
+        >
+          {element.name}
+        </span>
+
+        {/* Whisper text - shown when expanded or on hover detail */}
+        {showWhisper && element.whisper && (
+          <motion.span
+            className={cn(
+              'absolute left-1/2 -translate-x-1/2',
+              'whitespace-nowrap font-whisper italic',
+              'text-teal',
+              sizeClasses.whisper,
+              'max-w-[150px] truncate text-center',
+              element.category === 'intermediate' ? '-bottom-10' : '-bottom-10'
+            )}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+          >
+            {element.whisper}
+          </motion.span>
         )}
-      >
-        {element.name}
-      </span>
 
-      {/* Whisper text - shown when expanded or on hover detail */}
-      {showWhisper && element.whisper && (
-        <motion.span
-          className={cn(
-            'absolute left-1/2 -translate-x-1/2',
-            'whitespace-nowrap font-whisper italic',
-            'text-text-whisper/80',
-            sizeClasses.whisper,
-            'max-w-[150px] truncate text-center',
-            // Adjust position based on whether pathway text will show
-            element.category === 'intermediate' ? '-bottom-10' : '-bottom-10'
-          )}
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-        >
-          {element.whisper}
-        </motion.span>
-      )}
+        {/* Pathway text for intermediate elements */}
+        {showWhisper && element.category === 'intermediate' && INTERMEDIATE_ELEMENTS[element.id]?.pathwayText && (
+          <motion.span
+            className={cn(
+              'absolute -bottom-[52px] left-1/2 -translate-x-1/2',
+              'whitespace-nowrap font-whisper italic',
+              'text-gold text-[9px]',
+              'max-w-[180px] truncate text-center'
+            )}
+            initial={{ opacity: 0, y: -5 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.2 }}
+          >
+            {INTERMEDIATE_ELEMENTS[element.id].pathwayText}
+          </motion.span>
+        )}
 
-      {/* Pathway text for intermediate elements */}
-      {showWhisper && element.category === 'intermediate' && INTERMEDIATE_ELEMENTS[element.id]?.pathwayText && (
-        <motion.span
-          className={cn(
-            'absolute -bottom-[52px] left-1/2 -translate-x-1/2',
-            'whitespace-nowrap font-whisper italic',
-            'text-gold/80 text-[9px]',
-            'max-w-[180px] truncate text-center'
-          )}
-          initial={{ opacity: 0, y: -5 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-        >
-          {INTERMEDIATE_ELEMENTS[element.id].pathwayText}
-        </motion.span>
-      )}
-
-      {/* Milestone sparkle effect */}
-      {element.category === 'milestone' && (
-        <motion.div
-          className="absolute inset-0 rounded-xl pointer-events-none"
-          animate={{
-            boxShadow: [
-              '0 0 10px rgba(255, 214, 107, 0.3)',
-              '0 0 20px rgba(255, 214, 107, 0.5)',
-              '0 0 10px rgba(255, 214, 107, 0.3)',
-            ],
-          }}
-          transition={{
-            duration: 2,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      )}
-
-      {/* Primordial shimmer effect */}
-      {element.category === 'primordial' && (
-        <motion.div
-          className="absolute inset-0 rounded-xl pointer-events-none overflow-hidden"
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-        >
+        {/* Milestone indicator - subtle accent dot */}
+        {element.category === 'milestone' && (
           <motion.div
-            className="absolute inset-0 bg-gradient-to-r from-transparent via-teal/10 to-transparent"
-            animate={{ x: ['-100%', '100%'] }}
+            className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-gold"
+            animate={{
+              opacity: [0.6, 1, 0.6],
+            }}
             transition={{
-              duration: 3,
+              duration: 2,
               repeat: Infinity,
-              ease: 'linear',
-              repeatDelay: 2,
+              ease: 'easeInOut',
             }}
           />
-        </motion.div>
-      )}
+        )}
 
-      {/* Intermediate pulsing gold glow effect */}
-      {element.category === 'intermediate' && (
-        <motion.div
-          className="absolute inset-0 rounded-xl pointer-events-none"
-          animate={{
-            boxShadow: [
-              '0 0 8px rgba(255, 214, 107, 0.2)',
-              '0 0 16px rgba(255, 214, 107, 0.4)',
-              '0 0 8px rgba(255, 214, 107, 0.2)',
-            ],
-          }}
-          transition={{
-            duration: 2.5,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      )}
+        {/* Intermediate pulsing glow effect */}
+        {element.category === 'intermediate' && (
+          <motion.div
+            className="absolute inset-0 rounded-xl pointer-events-none"
+            animate={{
+              boxShadow: [
+                '0 0 0px rgba(175, 82, 222, 0)',
+                '0 0 12px rgba(175, 82, 222, 0.4)',
+                '0 0 0px rgba(175, 82, 222, 0)',
+              ],
+            }}
+            transition={{
+              duration: 2.5,
+              repeat: Infinity,
+              ease: 'easeInOut',
+            }}
+          />
+        )}
       </motion.div>
     </div>
   );
