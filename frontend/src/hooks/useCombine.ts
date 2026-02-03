@@ -2,7 +2,8 @@ import { useState, useCallback } from 'react';
 import { useGameStore } from '@/stores/gameStore';
 import { checkHint } from '@/lib/hints';
 import { DEMO_MODE, getDemoCombine } from '@/lib/demoData';
-import type { Element, CombineResponse } from '@/types';
+import { findElementById } from '@/lib/elements';
+import type { Element, CombineResponse, CombineRequest, SceneElement } from '@/types';
 
 // === RESULT INTERFACE ===
 
@@ -33,6 +34,13 @@ export function useCombine(): UseCombineResult {
   const setHint = useGameStore((state) => state.setHint);
   const contextTokens = useGameStore((state) => state.contextTokens);
   const discoveredElements = useGameStore((state) => state.discoveredElements);
+  const currentScene = useGameStore((state) => state.currentScene);
+
+  // Helper to find a scene element by ID from the current scene
+  const findSceneElement = useCallback((id: string): SceneElement | undefined => {
+    if (!currentScene) return undefined;
+    return currentScene.elements.find((el) => el.id === id);
+  }, [currentScene]);
 
   const combine = useCallback(
     async (elementAId: string, elementBId: string): Promise<CombineResult | null> => {
@@ -90,17 +98,79 @@ export function useCombine(): UseCombineResult {
           return null;
         }
 
+        // Build the request with element data for discovered elements and scene elements
+        // This handles:
+        // 1. Server restarts where discovered elements are only in client localStorage
+        // 2. Scene elements that only exist in the current zoom scene
+        const requestBody: CombineRequest = {
+          elementA: elementAId,
+          elementB: elementBId,
+          contextTokens,
+        };
+
+        // Check if elements are predefined
+        const predefinedA = findElementById(elementAId);
+        const predefinedB = findElementById(elementBId);
+
+        // For element A: try discovered elements, then scene elements
+        if (!predefinedA) {
+          const discoveredA = discoveredElements.get(elementAId);
+          if (discoveredA) {
+            requestBody.elementAData = {
+              name: discoveredA.name,
+              emoji: discoveredA.emoji,
+              whisper: discoveredA.whisper,
+              depth: discoveredA.depth,
+              ancestry: discoveredA.ancestry,
+            };
+          } else {
+            // Check if it's a scene element
+            const sceneA = findSceneElement(elementAId);
+            if (sceneA) {
+              requestBody.elementAData = {
+                name: sceneA.name,
+                emoji: sceneA.emoji,
+                whisper: sceneA.whisper,
+                depth: 'I', // Scene elements default to depth I
+                ancestry: [], // Scene elements have no ancestry
+              };
+            }
+          }
+        }
+
+        // For element B: try discovered elements, then scene elements
+        if (!predefinedB) {
+          const discoveredB = discoveredElements.get(elementBId);
+          if (discoveredB) {
+            requestBody.elementBData = {
+              name: discoveredB.name,
+              emoji: discoveredB.emoji,
+              whisper: discoveredB.whisper,
+              depth: discoveredB.depth,
+              ancestry: discoveredB.ancestry,
+            };
+          } else {
+            // Check if it's a scene element
+            const sceneB = findSceneElement(elementBId);
+            if (sceneB) {
+              requestBody.elementBData = {
+                name: sceneB.name,
+                emoji: sceneB.emoji,
+                whisper: sceneB.whisper,
+                depth: 'I', // Scene elements default to depth I
+                ancestry: [], // Scene elements have no ancestry
+              };
+            }
+          }
+        }
+
         // Call the combine API
         const response = await fetch('/api/combine', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            elementA: elementAId,
-            elementB: elementBId,
-            contextTokens,
-          }),
+          body: JSON.stringify(requestBody),
         });
 
         if (!response.ok) {
@@ -153,7 +223,7 @@ export function useCombine(): UseCombineResult {
         return null;
       }
     },
-    [discoveredElements, contextTokens, discoverElement, startReveal, clearSlots, setHint]
+    [discoveredElements, contextTokens, discoverElement, startReveal, clearSlots, setHint, findSceneElement]
   );
 
   return {

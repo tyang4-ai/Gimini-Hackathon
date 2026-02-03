@@ -107,6 +107,21 @@ export interface CombineRequest {
   elementA: string;              // Element ID
   elementB: string;              // Element ID
   contextTokens: number;         // Current context window usage
+  // Optional element data for user-discovered elements (not in server memory after restart)
+  elementAData?: {
+    name: string;
+    emoji: string;
+    whisper: string;
+    depth: DepthTier;
+    ancestry: string[];
+  };
+  elementBData?: {
+    name: string;
+    emoji: string;
+    whisper: string;
+    depth: DepthTier;
+    ancestry: string[];
+  };
 }
 
 export interface CombineResponse {

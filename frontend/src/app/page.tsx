@@ -53,7 +53,20 @@ export default function GamePage() {
   const evolutionPollingRef = useRef<NodeJS.Timeout | null>(null);
 
   // Combine hook for element-to-element combining
-  const { combine, isLoading: isCombining } = useCombine();
+  const { combine, isLoading: isCombining, error: combineError } = useCombine();
+
+  // State to control error toast visibility
+  const [showCombineError, setShowCombineError] = useState(false);
+
+  // Show error toast when combine error occurs
+  useEffect(() => {
+    if (combineError) {
+      setShowCombineError(true);
+      // Auto-hide after 5 seconds
+      const timer = setTimeout(() => setShowCombineError(false), 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [combineError]);
 
   // Check for mobile viewport
   useEffect(() => {
@@ -488,6 +501,32 @@ export default function GamePage() {
                 transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
               />
               <span className="text-sm font-display text-text-primary">Combining...</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Combine error toast */}
+      <AnimatePresence>
+        {showCombineError && combineError && (
+          <motion.div
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <div className="px-4 py-3 rounded-xl bg-white/95 backdrop-blur-md border border-rose/30 shadow-elevated flex items-center gap-3 max-w-md">
+              <span className="text-rose text-lg">⚠</span>
+              <div className="flex-1">
+                <p className="text-sm font-display text-rose">Combine Failed</p>
+                <p className="text-xs text-text-secondary mt-0.5">{combineError}</p>
+              </div>
+              <button
+                onClick={() => setShowCombineError(false)}
+                className="text-text-secondary hover:text-text-primary transition-colors p-1"
+              >
+                ✕
+              </button>
             </div>
           </motion.div>
         )}

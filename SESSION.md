@@ -2,8 +2,8 @@
 
 ## Project Status
 - **Current Phase:** Development - UI Polish & Testing
-- **Last Updated:** February 2, 2026 - Session 9 - Apple UI Testing Complete
-- **Active Agent:** None (testing complete, fixes applied)
+- **Last Updated:** February 2, 2026 - Session 10 - UX Audit & Critical Bug Fixes
+- **Active Agent:** None (bug fixes complete)
 - **Win Probability:** 50-55% (BUILD approved - v10 FINAL)
 
 ---
@@ -203,6 +203,61 @@ Gemini Hackathon/
 ---
 
 ## Session Log
+
+### February 2, 2026 - Session 10 - UX AUDIT & CRITICAL BUG FIXES
+**Duration:** ~45 min
+**Focus:** Fix critical combining bugs, UX improvements
+
+**Critical Bugs Fixed:**
+
+1. **User-discovered elements can't combine** (CRITICAL)
+   - **Root Cause:** `findElementById()` only checked predefined elements (PRIMORDIALS, MILESTONES, INTERMEDIATE_ELEMENTS)
+   - **Problem:** AI-generated elements stored in server's `discoveredElements` Map were not checked, causing 404 errors
+   - **Fix:**
+     - Modified `/api/combine` to check `discoveredElements` Map when element not found in predefined
+     - Added `elementAData`/`elementBData` optional fields to `CombineRequest` type
+     - Client now passes full element data for user-discovered elements
+     - Handles server restarts where discovered elements only exist in client localStorage
+   - **Files:** `route.ts`, `useCombine.ts`, `types/index.ts`
+
+2. **Scene elements cannot combine with other elements**
+   - **Root Cause:** Scene elements from ZoomViewport only pass IDs, but these dynamically generated elements don't exist in any registry
+   - **Fix:**
+     - Added `findSceneElement()` helper to `useCombine` hook that searches `currentScene.elements`
+     - When combining, checks: predefined → discovered → scene elements
+     - Passes scene element data to API when not found elsewhere
+   - **Files:** `useCombine.ts`
+
+3. **No visible error feedback for combine failures**
+   - **Problem:** Combine errors only logged to console, users couldn't see what went wrong
+   - **Fix:**
+     - Added error toast component to `page.tsx`
+     - Shows red error banner with dismiss button
+     - Auto-hides after 5 seconds
+     - Displays actual error message from API
+   - **Files:** `page.tsx`
+
+**Code Changes Summary:**
+| File | Change |
+|------|--------|
+| `frontend/src/app/api/combine/route.ts` | Check discoveredElements Map, accept client element data, reconstruct elements |
+| `frontend/src/hooks/useCombine.ts` | Pass element data for discovered/scene elements, add findSceneElement helper |
+| `frontend/src/types/index.ts` | Add elementAData/elementBData to CombineRequest |
+| `frontend/src/app/page.tsx` | Add error toast for combine failures |
+
+**Testing Status:**
+- TypeScript compiles without errors
+- Dev server running and hot-reloading correctly
+- Chrome MCP extension not connected (manual testing needed)
+
+**Next Steps:**
+1. Manual test: Combine two AI-generated elements
+2. Manual test: Drag scene element to sidebar element
+3. Test error toast displays correctly on API failure
+4. Run full UX test suite when Chrome extension available
+5. Commit and push to GitHub
+
+---
 
 ### February 1, 2026 - Session 8 - TESTING & BUG FIXES
 **Duration:** ~2 hours

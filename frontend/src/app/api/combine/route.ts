@@ -57,7 +57,7 @@ PRIMORDIALS.forEach((el) => discoveredElements.set(el.id, el));
 export async function POST(request: NextRequest): Promise<NextResponse<CombineResponse>> {
   try {
     const body: CombineRequest = await request.json();
-    const { elementA: elementAId, elementB: elementBId, contextTokens } = body;
+    const { elementA: elementAId, elementB: elementBId, contextTokens, elementAData, elementBData } = body;
 
     // Validate input
     if (!elementAId || !elementBId) {
@@ -67,13 +67,49 @@ export async function POST(request: NextRequest): Promise<NextResponse<CombineRe
       );
     }
 
-    // Find the elements
-    const elementA = findElementById(elementAId);
-    const elementB = findElementById(elementBId);
+    // Find the elements - check predefined first, then discovered elements, then client-provided data
+    let elementA: Element | undefined = findElementById(elementAId);
+    let elementB: Element | undefined = findElementById(elementBId);
+
+    // If not found in predefined, check server-side discovered elements
+    if (!elementA) {
+      elementA = discoveredElements.get(elementAId);
+    }
+    if (!elementB) {
+      elementB = discoveredElements.get(elementBId);
+    }
+
+    // If still not found, use client-provided data (for server restarts where client has localStorage)
+    if (!elementA && elementAData) {
+      const reconstructedElement: RegularElement = {
+        id: elementAId,
+        name: elementAData.name,
+        emoji: elementAData.emoji,
+        whisper: elementAData.whisper,
+        category: 'regular',
+        depth: elementAData.depth,
+        ancestry: elementAData.ancestry,
+      };
+      discoveredElements.set(elementAId, reconstructedElement);
+      elementA = reconstructedElement;
+    }
+    if (!elementB && elementBData) {
+      const reconstructedElement: RegularElement = {
+        id: elementBId,
+        name: elementBData.name,
+        emoji: elementBData.emoji,
+        whisper: elementBData.whisper,
+        category: 'regular',
+        depth: elementBData.depth,
+        ancestry: elementBData.ancestry,
+      };
+      discoveredElements.set(elementBId, reconstructedElement);
+      elementB = reconstructedElement;
+    }
 
     if (!elementA || !elementB) {
       return NextResponse.json(
-        { success: false, error: 'Element not found' },
+        { success: false, error: `Element not found: ${!elementA ? elementAId : elementBId}. Please include element data in request.` },
         { status: 404 }
       );
     }
