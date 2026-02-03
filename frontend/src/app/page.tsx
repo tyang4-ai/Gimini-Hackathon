@@ -4,11 +4,11 @@ import { useState, useEffect, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useGameStore, useDiscoveredElements } from '@/stores/gameStore';
 import { ElementCard } from '@/components/ElementCard';
-import { CombineZone } from '@/components/CombineZone';
 import { ZoomViewport } from '@/components/ZoomViewport';
 import { MilestoneReveal } from '@/components/MilestoneReveal';
 import { EvolutionPlayer } from '@/components/EvolutionPlayer';
 import { ParticleField } from '@/components/ui/ParticleField';
+import { useCombine } from '@/hooks/useCombine';
 import { cn } from '@/utils/cn';
 import type { Element, SceneElement, ZoomResponse, DepthTier } from '@/types';
 
@@ -51,6 +51,9 @@ export default function GamePage() {
   // Evolution tracking state
   const [evolution, setEvolution] = useState<EvolutionState | null>(null);
   const evolutionPollingRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Combine hook for element-to-element combining
+  const { combine, isLoading: isCombining } = useCombine();
 
   // Check for mobile viewport
   useEffect(() => {
@@ -136,6 +139,23 @@ export default function GamePage() {
   const handleZoomOut = useCallback(() => {
     popZoomPath();
   }, [popZoomPath]);
+
+  // Handle element-to-element combine (Infinite Craft style)
+  const handleElementCombine = useCallback(async (draggedId: string, targetId: string) => {
+    if (isCombining) return;
+
+    const result = await combine(draggedId, targetId);
+
+    if (result) {
+      const { element, isMilestone, isFirstDiscovery } = result;
+      console.log('Combined:', element.name, { isMilestone, isFirstDiscovery });
+
+      // If it's a milestone and first discovery, trigger the reveal animation
+      if (isMilestone && isFirstDiscovery && element.category === 'milestone') {
+        startReveal(element);
+      }
+    }
+  }, [combine, isCombining, startReveal]);
 
   // Cleanup evolution polling on unmount
   useEffect(() => {
@@ -242,20 +262,8 @@ export default function GamePage() {
     );
   }, []);
 
-  // Handle combine result - this receives the result info from CombineZone
-  // Note: CombineZone passes just the element, but we need isMilestone and isFirstDiscovery
-  // We'll modify this to accept extended info or check directly
-  const handleCombineResult = useCallback((element: Element, isMilestone?: boolean, isFirstDiscovery?: boolean) => {
-    console.log('Combined:', element.name, { isMilestone, isFirstDiscovery });
-
-    // If it's a milestone and first discovery, trigger the reveal animation
-    if (isMilestone && isFirstDiscovery && element.category === 'milestone') {
-      startReveal(element);
-    }
-  }, [startReveal]);
-
   // Group discovered elements by depth for display
-  const discoveredByDepth = discovered.reduce((acc, el) => {
+  const discoveredByDepth = discovered.reduce((acc: Record<DepthTier, Element[]>, el: Element) => {
     const depth = el.depth || 'I';
     if (!acc[depth]) acc[depth] = [];
     acc[depth].push(el);
@@ -270,7 +278,7 @@ export default function GamePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col relative">
+    <div className="min-h-screen bg-white bg-dot-pattern flex flex-col relative">
       {/* Subtle background particle effect */}
       <div className="fixed inset-0 pointer-events-none z-0 opacity-30">
         <ParticleField particleCount={30} speed={0.3} />
@@ -375,6 +383,7 @@ export default function GamePage() {
                         size="sm"
                         draggable={true}
                         onClick={() => handleElementZoom(element)}
+                        onCombine={handleElementCombine}
                       />
                     </motion.div>
                   ))}
@@ -409,13 +418,14 @@ export default function GamePage() {
                             Depth {depth}
                           </h3>
                           <div className="grid grid-cols-4 gap-2">
-                            {elementsAtDepth.map((element) => (
+                            {elementsAtDepth.map((element: Element) => (
                               <ElementCard
                                 key={element.id}
                                 element={element}
                                 size="sm"
                                 draggable={true}
                                 onClick={() => handleElementZoom(element)}
+                                onCombine={handleElementCombine}
                               />
                             ))}
                           </div>
@@ -450,22 +460,38 @@ export default function GamePage() {
         )}
 
         {/* Main viewport area */}
-        <main className="flex-1 flex flex-col p-4 gap-4 overflow-hidden bg-white">
-          {/* Zoom Viewport */}
+        <main className="flex-1 flex flex-col p-4 overflow-hidden bg-white">
+          {/* Zoom Viewport - now takes full height since CombineZone is removed */}
           <div className="flex-1 min-h-0">
             <ZoomViewport
               onElementClick={handleZoomIntoElement}
+              onCombine={handleElementCombine}
               className="h-full"
             />
           </div>
-
-          {/* Combine Zone */}
-          <CombineZone
-            onCombine={handleCombineResult}
-            className="shrink-0"
-          />
         </main>
       </div>
+
+      {/* Combining indicator */}
+      <AnimatePresence>
+        {isCombining && (
+          <motion.div
+            className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <div className="px-4 py-2 rounded-full bg-white/95 backdrop-blur-md border border-accent-blue/30 shadow-elevated flex items-center gap-3">
+              <motion.div
+                className="w-4 h-4 border-2 border-accent-blue/30 border-t-accent-blue rounded-full"
+                animate={{ rotate: 360 }}
+                transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+              />
+              <span className="text-sm font-display text-text-primary">Combining...</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Milestone Reveal Overlay */}
       {revealElement && (

@@ -1,5 +1,6 @@
 'use client';
 
+import { useState } from 'react';
 import { motion } from 'framer-motion';
 import type { Element } from '@/types';
 import { cn } from '@/utils/cn';
@@ -10,6 +11,7 @@ interface ElementCardProps {
   size?: 'sm' | 'md' | 'lg';
   draggable?: boolean;
   onClick?: () => void;
+  onCombine?: (draggedElementId: string, targetElementId: string) => void;
   showWhisper?: boolean;
   className?: string;
 }
@@ -68,21 +70,46 @@ export function ElementCard({
   size = 'md',
   draggable = true,
   onClick,
+  onCombine,
   showWhisper = false,
   className,
 }: ElementCardProps) {
   const sizeClasses = sizeConfig[size];
   const categoryClasses = categoryStyles[element.category];
+  const [isDropTarget, setIsDropTarget] = useState(false);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData('text/plain', element.id);
     e.dataTransfer.effectAllowed = 'move';
   };
 
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setIsDropTarget(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDropTarget(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDropTarget(false);
+
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (draggedId && draggedId !== element.id && onCombine) {
+      onCombine(draggedId, element.id);
+    }
+  };
+
   return (
     <div
       draggable={draggable}
       onDragStart={handleDragStart}
+      onDragOver={onCombine ? handleDragOver : undefined}
+      onDragLeave={onCombine ? handleDragLeave : undefined}
+      onDrop={onCombine ? handleDrop : undefined}
       onClick={onClick}
     >
       <motion.div
@@ -98,6 +125,8 @@ export function ElementCard({
           categoryClasses.accentBg,
           // Milestone special treatment - subtle ring
           element.category === 'milestone' && 'ring-1 ring-gold/20',
+          // Drop target highlight
+          isDropTarget && 'ring-2 ring-accent-blue border-accent-blue scale-110 shadow-accent-teal',
           className
         )}
         whileHover={{

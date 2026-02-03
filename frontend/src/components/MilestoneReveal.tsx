@@ -14,12 +14,13 @@ interface MilestoneRevealProps {
 
 /**
  * MilestoneReveal - Dramatic 9-second reveal animation for milestone discoveries
+ * Apple-style frosted glass overlay with blur-to-sharp transition
  *
  * Animation Timeline:
- * - 0-2s: Screen dims (overlay opacity 0 → 0.6)
+ * - 0-2s: Screen dims (overlay opacity 0 → 0.95)
  * - 2-5s: Silhouette appears with blur (blur: 20px → 5px)
  * - 5-9s: Image sharpens completely (blur: 5px → 0)
- * - After 9s: Infinite gold glow pulse animation
+ * - After 9s: Subtle pulse animation
  */
 export function MilestoneReveal({
   element,
@@ -95,29 +96,24 @@ export function MilestoneReveal({
           exit={{ opacity: 0 }}
           transition={{ duration: 0.5 }}
         >
-          {/* Dark overlay */}
+          {/* Frosted glass overlay - Apple style */}
           <motion.div
-            className="absolute inset-0 bg-void"
+            className="absolute inset-0 bg-white/95 backdrop-blur-xl"
             initial={{ opacity: 0 }}
-            animate={{ opacity: 0.6 }}
+            animate={{ opacity: 1 }}
             transition={{ duration: 0.5 }}
           />
 
           {/* Content container */}
           <div className="relative z-10 flex flex-col items-center">
-            {/* Glow ring effect (behind emoji) */}
+            {/* Subtle shadow pulse effect (behind emoji) */}
             {phase === 'glow' && (
               <motion.div
-                className="absolute inset-0 rounded-full"
+                className="absolute rounded-full"
                 initial={{ scale: 0.8, opacity: 0 }}
                 animate={{
-                  scale: [1, 1.2, 1],
-                  opacity: [0.5, 0.8, 0.5],
-                  boxShadow: [
-                    '0 0 40px 20px rgba(255, 214, 107, 0.3)',
-                    '0 0 80px 40px rgba(255, 214, 107, 0.5)',
-                    '0 0 40px 20px rgba(255, 214, 107, 0.3)',
-                  ],
+                  scale: [1, 1.1, 1],
+                  opacity: [0.3, 0.5, 0.3],
                 }}
                 transition={{
                   duration: 2,
@@ -130,6 +126,7 @@ export function MilestoneReveal({
                   left: '50%',
                   top: '50%',
                   transform: 'translate(-50%, -50%)',
+                  background: 'radial-gradient(circle, rgba(255, 149, 0, 0.15) 0%, transparent 70%)',
                 }}
               />
             )}
@@ -147,7 +144,7 @@ export function MilestoneReveal({
                 scale: {
                   type: 'spring',
                   stiffness: 200,
-                  damping: 20,
+                  damping: 25,
                   delay: 0.5,
                 },
                 opacity: {
@@ -162,11 +159,7 @@ export function MilestoneReveal({
             >
               {/* Emoji */}
               <span
-                className={cn(
-                  'text-[120px] leading-none',
-                  'drop-shadow-[0_0_30px_rgba(255,214,107,0.6)]',
-                  phase === 'glow' && 'drop-shadow-[0_0_50px_rgba(255,214,107,0.8)]'
-                )}
+                className="text-[120px] leading-none"
                 role="img"
                 aria-label={element.name}
               >
@@ -177,9 +170,8 @@ export function MilestoneReveal({
             {/* Element name */}
             <motion.h2
               className={cn(
-                'mt-8 font-display text-4xl',
-                'text-gold',
-                'drop-shadow-[0_0_20px_rgba(255,214,107,0.5)]'
+                'mt-8 font-display text-4xl font-bold',
+                'text-gold'
               )}
               initial={{ opacity: 0, y: 20, filter: 'blur(10px)' }}
               animate={{
@@ -201,9 +193,8 @@ export function MilestoneReveal({
                 <motion.p
                   className={cn(
                     'mt-6 font-whisper text-xl italic',
-                    'text-text-whisper',
-                    'max-w-md text-center',
-                    'drop-shadow-[0_0_10px_rgba(183,240,255,0.3)]'
+                    'text-teal',
+                    'max-w-md text-center'
                   )}
                   initial={{ opacity: 0, y: 10 }}
                   animate={{ opacity: 1, y: 0 }}
@@ -224,7 +215,7 @@ export function MilestoneReveal({
                 <motion.p
                   className={cn(
                     'mt-4 font-body text-base',
-                    'text-text-lore/80',
+                    'text-text-secondary',
                     'max-w-lg text-center'
                   )}
                   initial={{ opacity: 0, y: 10 }}
@@ -240,38 +231,6 @@ export function MilestoneReveal({
                 </motion.p>
               )}
             </AnimatePresence>
-
-            {/* Subtle particle effects during glow phase */}
-            {phase === 'glow' && (
-              <div className="absolute inset-0 pointer-events-none overflow-hidden">
-                {[...Array(6)].map((_, i) => (
-                  <motion.div
-                    key={i}
-                    className="absolute w-2 h-2 rounded-full bg-gold/60"
-                    initial={{
-                      x: 0,
-                      y: 0,
-                      opacity: 0,
-                    }}
-                    animate={{
-                      x: [0, (Math.random() - 0.5) * 200],
-                      y: [0, -100 - Math.random() * 100],
-                      opacity: [0, 1, 0],
-                    }}
-                    transition={{
-                      duration: 2 + Math.random(),
-                      repeat: Infinity,
-                      delay: i * 0.3,
-                      ease: 'easeOut',
-                    }}
-                    style={{
-                      left: '50%',
-                      top: '40%',
-                    }}
-                  />
-                ))}
-              </div>
-            )}
           </div>
 
           {/* Click to continue hint (after animation completes) */}
@@ -279,7 +238,7 @@ export function MilestoneReveal({
             <motion.div
               className="absolute bottom-12 left-1/2 -translate-x-1/2"
               initial={{ opacity: 0 }}
-              animate={{ opacity: [0.4, 0.8, 0.4] }}
+              animate={{ opacity: [0.4, 0.7, 0.4] }}
               transition={{
                 duration: 2,
                 repeat: Infinity,

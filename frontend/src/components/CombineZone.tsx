@@ -93,7 +93,14 @@ export function CombineZone({ onCombine, className }: CombineZoneProps) {
       );
 
       if (!element) {
-        element = discoveredElements.get(elementId);
+        // Defensive check: ensure discoveredElements is a Map before calling .get()
+        if (discoveredElements instanceof Map) {
+          element = discoveredElements.get(elementId);
+        } else if (Array.isArray(discoveredElements)) {
+          // Handle case where it might be serialized as array of entries
+          const entry = (discoveredElements as [string, Element][]).find(([id]: [string, Element]) => id === elementId);
+          element = entry ? entry[1] : undefined;
+        }
       }
 
       if (element) {

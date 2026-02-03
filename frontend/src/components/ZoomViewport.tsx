@@ -9,10 +9,11 @@ import { cn } from '@/utils/cn';
 
 interface ZoomViewportProps {
   onElementClick?: (element: SceneElement) => void;
+  onCombine?: (draggedId: string, targetId: string) => void;
   className?: string;
 }
 
-// Depth tier display mapping
+// Depth tier display mapping - Apple accent colors
 const depthDisplay: Record<DepthTier, { label: string; color: string }> = {
   I: { label: 'Depth I', color: 'text-teal' },
   II: { label: 'Depth II', color: 'text-violet' },
@@ -49,42 +50,21 @@ function useTypewriter(text: string, speed: number = 30) {
   return { displayText, isComplete };
 }
 
-// Particle animation for loading state
-function LoadingParticles() {
-  const particles = Array.from({ length: 20 }, (_, i) => ({
-    id: i,
-    x: Math.random() * 100,
-    y: Math.random() * 100,
-    size: Math.random() * 4 + 2,
-    duration: Math.random() * 3 + 2,
-    delay: Math.random() * 2,
-  }));
-
+// Apple-style loading spinner
+function LoadingSpinner() {
   return (
-    <div className="absolute inset-0 overflow-hidden pointer-events-none">
-      {particles.map((particle) => (
-        <motion.div
-          key={particle.id}
-          className="absolute rounded-full bg-teal/60"
-          style={{
-            width: particle.size,
-            height: particle.size,
-            left: `${particle.x}%`,
-            top: `${particle.y}%`,
-          }}
-          animate={{
-            y: [0, -30, 0],
-            opacity: [0.3, 1, 0.3],
-            scale: [1, 1.5, 1],
-          }}
-          transition={{
-            duration: particle.duration,
-            delay: particle.delay,
-            repeat: Infinity,
-            ease: 'easeInOut',
-          }}
-        />
-      ))}
+    <div className="flex flex-col items-center gap-4">
+      <motion.div
+        className="w-10 h-10 border-2 border-border border-t-accent-blue rounded-full"
+        animate={{ rotate: 360 }}
+        transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
+      />
+      <div className="text-center">
+        <p className="font-display text-text-primary text-sm">Exploring...</p>
+        <p className="font-whisper text-xs text-text-secondary italic mt-1">
+          Discovering deeper memories
+        </p>
+      </div>
     </div>
   );
 }
@@ -95,17 +75,40 @@ function SceneElementButton({
   index,
   onClick,
   onNativeDragStart,
+  onCombine,
 }: {
   element: SceneElement;
   index: number;
   onClick: () => void;
   onNativeDragStart?: (e: React.DragEvent<HTMLDivElement>) => void;
+  onCombine?: (draggedId: string, targetId: string) => void;
 }) {
   const [isHovered, setIsHovered] = useState(false);
+  const [isDropTarget, setIsDropTarget] = useState(false);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     if (element.canCombine && onNativeDragStart) {
       onNativeDragStart(e);
+    }
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    setIsDropTarget(true);
+  };
+
+  const handleDragLeave = () => {
+    setIsDropTarget(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    setIsDropTarget(false);
+
+    const draggedId = e.dataTransfer.getData('text/plain');
+    if (draggedId && draggedId !== element.id && onCombine) {
+      onCombine(draggedId, element.id);
     }
   };
 
@@ -119,6 +122,9 @@ function SceneElementButton({
       }}
       draggable={element.canCombine}
       onDragStart={handleDragStart}
+      onDragOver={onCombine ? handleDragOver : undefined}
+      onDragLeave={onCombine ? handleDragLeave : undefined}
+      onDrop={onCombine ? handleDrop : undefined}
     >
       <motion.div
         initial={{ opacity: 0, scale: 0, y: 20 }}
@@ -126,59 +132,53 @@ function SceneElementButton({
         exit={{ opacity: 0, scale: 0.5 }}
         transition={{
           type: 'spring',
-          stiffness: 300,
-          damping: 20,
+          stiffness: 200,
+          damping: 25,
           delay: index * 0.1,
         }}
-        whileHover={{ scale: 1.15 }}
-        whileTap={{ scale: 0.95 }}
+        whileHover={{ scale: 1.05 }}
+        whileTap={{ scale: 0.98 }}
         onClick={onClick}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        {/* Element container */}
+        {/* Element container - Apple-style card */}
         <div
           className={cn(
             'relative flex flex-col items-center justify-center',
-            'w-16 h-16 rounded-xl border-2 select-none',
+            'w-16 h-16 rounded-xl border select-none',
             'transition-all duration-200',
-            'bg-void/60 backdrop-blur-sm',
+            'bg-white shadow-card',
             element.canZoomInto
-              ? 'border-violet/60 shadow-glow-violet'
-              : 'border-surface/50',
-            element.canCombine && 'border-teal/60'
+              ? 'border-violet/40 hover:shadow-accent-violet'
+              : 'border-border',
+            element.canCombine && 'border-teal/40',
+            // Drop target highlight
+            isDropTarget && 'ring-2 ring-accent-blue border-accent-blue scale-110 shadow-accent-teal'
           )}
         >
           {/* Emoji */}
-          <span className="text-3xl leading-none drop-shadow-md">
+          <span className="text-3xl leading-none">
             {element.emoji}
           </span>
 
           {/* Name */}
-          <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-display text-text-primary/90">
+          <span className="absolute -bottom-5 left-1/2 -translate-x-1/2 whitespace-nowrap text-xs font-display text-text-primary">
             {element.name}
           </span>
 
           {/* Zoom indicator */}
           {element.canZoomInto && (
-            <motion.div
-              className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-violet flex items-center justify-center"
-              animate={{ scale: [1, 1.2, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
+            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-violet flex items-center justify-center">
               <span className="text-[8px] text-white font-bold">+</span>
-            </motion.div>
+            </div>
           )}
 
           {/* Combine indicator */}
           {element.canCombine && (
-            <motion.div
-              className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-teal flex items-center justify-center"
-              animate={{ rotate: 360 }}
-              transition={{ duration: 4, repeat: Infinity, ease: 'linear' }}
-            >
-              <span className="text-[8px] text-void font-bold">*</span>
-            </motion.div>
+            <div className="absolute -top-1 -left-1 w-4 h-4 rounded-full bg-teal flex items-center justify-center">
+              <span className="text-[8px] text-white font-bold">*</span>
+            </div>
           )}
         </div>
 
@@ -192,8 +192,8 @@ function SceneElementButton({
               exit={{ opacity: 0, y: -5 }}
               transition={{ duration: 0.15 }}
             >
-              <div className="px-3 py-2 rounded-lg bg-void/90 backdrop-blur-sm border border-surface/40 max-w-[200px]">
-                <p className="text-xs font-whisper italic text-text-whisper/90 text-center">
+              <div className="px-3 py-2 rounded-lg bg-white shadow-elevated border border-border max-w-[200px]">
+                <p className="text-xs font-whisper italic text-teal text-center">
                   &ldquo;{element.whisper}&rdquo;
                 </p>
               </div>
@@ -219,11 +219,11 @@ function ContextNotification({
       exit={{ opacity: 0, y: 20, scale: 0.9 }}
       transition={{ duration: 0.4, ease: 'easeOut' }}
     >
-      <div className="px-4 py-3 rounded-xl bg-void/90 backdrop-blur-md border border-gold/40 shadow-glow-gold">
-        <p className="text-sm font-whisper italic text-text-lore">
+      <div className="px-4 py-3 rounded-xl bg-white/95 backdrop-blur-md border border-gold/30 shadow-elevated">
+        <p className="text-sm font-whisper italic text-gold">
           {callback.text}
         </p>
-        <p className="text-xs text-text-muted mt-1">
+        <p className="text-xs text-text-secondary mt-1">
           From {depthDisplay[callback.referencedDepth].label}
         </p>
       </div>
@@ -248,13 +248,13 @@ function ZoomBreadcrumbs({
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2 }}
     >
-      <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-void/80 backdrop-blur-sm border border-surface/30">
+      <div className="flex items-center gap-1 px-3 py-1.5 rounded-lg bg-white/90 backdrop-blur-sm border border-border shadow-card">
         {/* Home / Surface link */}
         <button
           onClick={() => onNavigate(-1)}
           className={cn(
-            'text-xs font-display text-text-muted hover:text-text-primary transition-colors',
-            'px-2 py-0.5 rounded hover:bg-surface/30'
+            'text-xs font-display text-text-secondary hover:text-text-primary transition-colors',
+            'px-2 py-0.5 rounded hover:bg-surface'
           )}
         >
           Surface
@@ -262,14 +262,14 @@ function ZoomBreadcrumbs({
 
         {breadcrumbs.map((crumb, index) => (
           <div key={crumb.id} className="flex items-center">
-            <span className="text-text-muted/50 mx-1">/</span>
+            <span className="text-text-muted mx-1">/</span>
             <button
               onClick={() => onNavigate(index)}
               className={cn(
                 'text-xs font-display transition-colors px-2 py-0.5 rounded',
                 index === breadcrumbs.length - 1
-                  ? cn('text-text-primary', depthDisplay[crumb.depth].color)
-                  : 'text-text-muted hover:text-text-primary hover:bg-surface/30'
+                  ? cn('text-text-primary font-medium', depthDisplay[crumb.depth].color)
+                  : 'text-text-secondary hover:text-text-primary hover:bg-surface'
               )}
             >
               {crumb.name}
@@ -290,16 +290,16 @@ function ErrorNotification({ message, onDismiss }: { message: string; onDismiss:
       animate={{ opacity: 1, x: 0 }}
       exit={{ opacity: 0, x: 20 }}
     >
-      <div className="px-4 py-3 rounded-lg bg-rose/20 border border-rose/50 backdrop-blur-sm">
+      <div className="px-4 py-3 rounded-lg bg-rose/10 border border-rose/30 shadow-card">
         <div className="flex items-start gap-2">
           <span className="text-rose">&#x26A0;</span>
           <div className="flex-1">
             <p className="text-sm text-rose font-display">Zoom Failed</p>
-            <p className="text-xs text-text-muted mt-1">{message}</p>
+            <p className="text-xs text-text-secondary mt-1">{message}</p>
           </div>
           <button
             onClick={onDismiss}
-            className="text-text-muted hover:text-text-primary transition-colors"
+            className="text-text-secondary hover:text-text-primary transition-colors"
           >
             &#x2715;
           </button>
@@ -309,57 +309,32 @@ function ErrorNotification({ message, onDismiss }: { message: string; onDismiss:
   );
 }
 
-// Empty state - cosmic void
-function CosmicVoid() {
+// Empty state - clean minimal prompt
+function EmptyState() {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center">
-      {/* Starfield background */}
-      <div className="absolute inset-0 overflow-hidden">
-        {Array.from({ length: 50 }, (_, i) => (
-          <motion.div
-            key={i}
-            className="absolute rounded-full bg-white"
-            style={{
-              width: Math.random() * 2 + 1,
-              height: Math.random() * 2 + 1,
-              left: `${Math.random() * 100}%`,
-              top: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              opacity: [0.2, 0.8, 0.2],
-            }}
-            transition={{
-              duration: Math.random() * 3 + 2,
-              delay: Math.random() * 2,
-              repeat: Infinity,
-            }}
-          />
-        ))}
-      </div>
-
       {/* Central prompt */}
       <motion.div
         className="text-center z-10"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
+        transition={{ duration: 0.5 }}
       >
         <motion.div
           className="text-6xl mb-6"
           animate={{
-            scale: [1, 1.1, 1],
-            rotate: [0, 5, -5, 0],
+            scale: [1, 1.05, 1],
           }}
           transition={{
-            duration: 4,
+            duration: 3,
             repeat: Infinity,
             ease: 'easeInOut',
           }}
         >
-          <span className="opacity-60">&#x1F30C;</span>
+          <span className="opacity-40">&#x1F30C;</span>
         </motion.div>
-        <p className="font-whisper text-lg text-text-whisper/70 italic max-w-xs">
-          Click an element to descend into its memories...
+        <p className="font-whisper text-lg text-text-secondary italic max-w-xs">
+          Click an element to explore its memories...
         </p>
       </motion.div>
     </div>
@@ -368,6 +343,7 @@ function CosmicVoid() {
 
 export function ZoomViewport({
   onElementClick,
+  onCombine,
   className,
 }: ZoomViewportProps) {
   const [showContextCallback, setShowContextCallback] = useState(false);
@@ -453,22 +429,14 @@ export function ZoomViewport({
     []
   );
 
-  // Determine background style
-  const backgroundStyle = scene?.backgroundGradient
-    ? { background: scene.backgroundGradient }
-    : {
-        background:
-          'radial-gradient(ellipse at center, #1c2541 0%, #0d1321 100%)',
-      };
-
   return (
     <div
       className={cn(
-        'relative w-full overflow-hidden rounded-2xl border border-surface/30',
-        'aspect-video', // 16:9 aspect ratio
+        'relative w-full overflow-hidden rounded-2xl border border-border',
+        'aspect-video bg-gradient-to-b from-white to-surface',
+        'shadow-card',
         className
       )}
-      style={backgroundStyle}
     >
       {/* Breadcrumb navigation */}
       {breadcrumbs.length > 0 && (
@@ -492,29 +460,18 @@ export function ZoomViewport({
       <AnimatePresence>
         {isLoading && (
           <motion.div
-            className="absolute inset-0 z-30 flex items-center justify-center bg-void/80 backdrop-blur-sm"
+            className="absolute inset-0 z-30 flex items-center justify-center bg-white/90 backdrop-blur-sm"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
           >
-            <LoadingParticles />
-            <motion.div
-              className="text-center"
-              animate={{ scale: [1, 1.05, 1] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            >
-              <span className="text-4xl mb-4 block">&#x1F52D;</span>
-              <p className="font-display text-text-primary">Descending...</p>
-              <p className="font-whisper text-sm text-text-whisper/70 italic mt-1">
-                Exploring deeper memories
-              </p>
-            </motion.div>
+            <LoadingSpinner />
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Empty state */}
-      {!scene && !isLoading && <CosmicVoid />}
+      {!scene && !isLoading && <EmptyState />}
 
       {/* Scene content */}
       <AnimatePresence mode="wait">
@@ -522,11 +479,11 @@ export function ZoomViewport({
           <motion.div
             key={scene.id}
             className="absolute inset-0"
-            initial={{ opacity: 0, scale: 1.1 }}
+            initial={{ opacity: 0, scale: 1.05 }}
             animate={{ opacity: 1, scale: 1 }}
-            exit={{ opacity: 0, scale: 0.9 }}
+            exit={{ opacity: 0, scale: 0.95 }}
             transition={{
-              duration: 0.5,
+              duration: 0.4,
               ease: 'easeOut',
             }}
           >
@@ -536,16 +493,16 @@ export function ZoomViewport({
               breadcrumbs.length > 0 ? "top-14" : "top-4"
             )}>
               <motion.div
-                className="px-4 py-3 rounded-lg bg-void/70 backdrop-blur-sm border border-surface/30 max-w-lg mx-auto"
+                className="px-4 py-3 rounded-lg bg-white/90 backdrop-blur-sm border border-border shadow-card max-w-lg mx-auto"
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: 0.2 }}
               >
-                <p className="font-whisper text-sm text-text-primary/90 italic text-center">
+                <p className="font-whisper text-sm text-text-primary italic text-center">
                   {displayText}
                   {!isComplete && (
                     <motion.span
-                      className="inline-block w-0.5 h-4 bg-text-primary/70 ml-1 align-middle"
+                      className="inline-block w-0.5 h-4 bg-text-primary ml-1 align-middle"
                       animate={{ opacity: [1, 0] }}
                       transition={{ duration: 0.5, repeat: Infinity }}
                     />
@@ -565,8 +522,8 @@ export function ZoomViewport({
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ delay: 0.8 }}
               >
-                <div className="px-3 py-2 rounded-lg bg-gold/10 border border-gold/30">
-                  <p className="text-[10px] font-whisper text-text-lore/80 italic">
+                <div className="px-3 py-2 rounded-lg bg-gold/5 border border-gold/20 shadow-card">
+                  <p className="text-[10px] font-whisper text-gold italic">
                     &#x1F4DC; {scene.memoryFragment}
                   </p>
                 </div>
@@ -585,6 +542,7 @@ export function ZoomViewport({
                   index={index}
                   onClick={() => handleElementClick(element)}
                   onNativeDragStart={handleElementDragStart(element)}
+                  onCombine={onCombine}
                 />
               ))}
             </div>
@@ -596,8 +554,8 @@ export function ZoomViewport({
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5 }}
             >
-              <div className="px-3 py-1.5 rounded-lg bg-void/70 backdrop-blur-sm border border-surface/30 flex items-center gap-2">
-                <span className="text-xs text-text-muted">&#x2693;</span>
+              <div className="px-3 py-1.5 rounded-lg bg-white/90 backdrop-blur-sm border border-border shadow-card flex items-center gap-2">
+                <span className="text-xs text-text-secondary">&#x2693;</span>
                 <span
                   className={cn(
                     'text-sm font-display font-semibold',
@@ -615,18 +573,19 @@ export function ZoomViewport({
                 className={cn(
                   'absolute bottom-4 right-4 z-10',
                   'px-4 py-2 rounded-lg',
-                  'bg-surface/50 backdrop-blur-sm border border-surface/40',
-                  'text-sm font-display text-text-primary/90',
-                  'hover:bg-surface/70 hover:border-violet/40',
+                  'bg-white border border-border',
+                  'text-sm font-display text-text-primary',
+                  'hover:bg-surface hover:border-accent-blue/40',
                   'transition-colors duration-200',
-                  'flex items-center gap-2'
+                  'flex items-center gap-2',
+                  'shadow-card'
                 )}
                 onClick={zoomOut}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6 }}
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
               >
                 <span>&#x2191;</span>
                 <span>Ascend</span>
