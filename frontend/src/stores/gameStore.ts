@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { persist, createJSONStorage, StateStorage } from 'zustand/middleware';
+import { persist } from 'zustand/middleware';
 import type {
   Element,
   ZoomPath,
@@ -102,67 +102,47 @@ const maxDepth = (a: DepthTier, b: DepthTier): DepthTier => {
   return compareDepth(a, b) >= 0 ? a : b;
 };
 
-// === SERIALIZATION HELPERS ===
-
-interface SerializedState {
-  primordials: Element[];
-  discoveredElements: [string, Element][];
-  milestones: [string, Element][];
-  zoomPath: ZoomPath;
-  currentScene: ZoomScene | null;
-  combineSlots: [Element | null, Element | null];
-  lastCombineResult: Element | null;
-  totalDiscoveries: number;
-  deepestDepth: DepthTier;
-  contextTokens: number;
-  isRevealing: boolean;
-  revealElement: Element | null;
-  showHint: string | null;
-}
-
-const serializeState = (state: GameState): SerializedState => ({
-  ...state,
-  discoveredElements: Array.from(state.discoveredElements.entries()),
-  milestones: Array.from(state.milestones.entries()),
-});
-
-const deserializeState = (serialized: SerializedState): GameState => ({
-  ...serialized,
-  discoveredElements: new Map(serialized.discoveredElements),
-  milestones: new Map(serialized.milestones),
-});
-
 // === CUSTOM STORAGE ===
+// Note: We use custom serialize/deserialize functions to handle Map serialization
+// because JSON.stringify converts Maps to {} before our storage layer sees them.
 
-const customStorage: StateStorage = {
-  getItem: (name: string): string | null => {
-    const str = localStorage.getItem(name);
-    if (!str) return null;
+const customSerialize = (state: { state: Partial<GameState>; version: number }): string => {
+  const serializedState: Record<string, unknown> = { ...state.state };
 
-    try {
-      const parsed = JSON.parse(str);
-      if (parsed.state) {
-        parsed.state = deserializeState(parsed.state as SerializedState);
-      }
-      return JSON.stringify(parsed);
-    } catch {
-      return str;
-    }
-  },
-  setItem: (name: string, value: string): void => {
-    try {
-      const parsed = JSON.parse(value);
-      if (parsed.state) {
-        parsed.state = serializeState(parsed.state as GameState);
-      }
-      localStorage.setItem(name, JSON.stringify(parsed));
-    } catch {
-      localStorage.setItem(name, value);
-    }
-  },
-  removeItem: (name: string): void => {
-    localStorage.removeItem(name);
-  },
+  // Convert Maps to arrays for JSON serialization
+  if (state.state.discoveredElements instanceof Map) {
+    serializedState.discoveredElements = Array.from(state.state.discoveredElements.entries());
+  }
+  if (state.state.milestones instanceof Map) {
+    serializedState.milestones = Array.from(state.state.milestones.entries());
+  }
+
+  return JSON.stringify({
+    state: serializedState,
+    version: state.version,
+  });
+};
+
+const customDeserialize = (str: string): { state: Partial<GameState>; version: number } => {
+  const parsed = JSON.parse(str);
+  const deserializedState: Partial<GameState> = { ...parsed.state };
+
+  // Convert arrays back to Maps
+  if (Array.isArray(parsed.state.discoveredElements)) {
+    deserializedState.discoveredElements = new Map(parsed.state.discoveredElements);
+  } else {
+    deserializedState.discoveredElements = new Map();
+  }
+  if (Array.isArray(parsed.state.milestones)) {
+    deserializedState.milestones = new Map(parsed.state.milestones);
+  } else {
+    deserializedState.milestones = new Map();
+  }
+
+  return {
+    state: deserializedState,
+    version: parsed.version,
+  };
 };
 
 // === STORE IMPLEMENTATION ===
@@ -305,7 +285,19 @@ export const useGameStore = create<GameStore>()(
     }),
     {
       name: 'omnigenesis-game-storage',
-      storage: createJSONStorage(() => customStorage),
+      storage: {
+        getItem: (name: string) => {
+          const str = localStorage.getItem(name);
+          if (!str) return null;
+          return customDeserialize(str);
+        },
+        setItem: (name: string, value: { state: Partial<GameState>; version: number }) => {
+          localStorage.setItem(name, customSerialize(value));
+        },
+        removeItem: (name: string) => {
+          localStorage.removeItem(name);
+        },
+      },
       partialize: (state) => ({
         // Only persist these fields
         discoveredElements: state.discoveredElements,

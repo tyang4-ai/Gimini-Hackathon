@@ -422,7 +422,7 @@ export default function GamePage() {
                       return (
                         <div key={depth}>
                           <h3 className={cn(
-                            'text-xs font-display font-medium mb-2',
+                            'text-xs font-display font-medium mb-4',
                             depth === 'II' && 'text-violet',
                             depth === 'III' && 'text-rose',
                             depth === 'IV' && 'text-gold',
@@ -430,7 +430,7 @@ export default function GamePage() {
                           )}>
                             Depth {depth}
                           </h3>
-                          <div className="grid grid-cols-4 gap-2">
+                          <div className="grid grid-cols-4 gap-x-2 gap-y-8 pb-6">
                             {elementsAtDepth.map((element: Element) => (
                               <ElementCard
                                 key={element.id}

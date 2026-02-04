@@ -5,6 +5,34 @@ import { DEMO_MODE, getDemoCombine } from '@/lib/demoData';
 import { findElementById } from '@/lib/elements';
 import type { Element, CombineResponse, CombineRequest, SceneElement } from '@/types';
 
+// === HELPER FUNCTIONS ===
+
+// Safely get keys from discoveredElements (handles Map or Array during hydration)
+function getDiscoveredKeys(discoveredElements: Map<string, Element> | [string, Element][]): Set<string> {
+  if (discoveredElements instanceof Map) {
+    return new Set(discoveredElements.keys());
+  }
+  if (Array.isArray(discoveredElements)) {
+    return new Set(discoveredElements.map(([id]) => id));
+  }
+  return new Set();
+}
+
+// Safely get an element by ID from discoveredElements
+function getDiscoveredElement(
+  discoveredElements: Map<string, Element> | [string, Element][],
+  id: string
+): Element | undefined {
+  if (discoveredElements instanceof Map) {
+    return discoveredElements.get(id);
+  }
+  if (Array.isArray(discoveredElements)) {
+    const entry = discoveredElements.find(([entryId]) => entryId === id);
+    return entry ? entry[1] : undefined;
+  }
+  return undefined;
+}
+
 // === RESULT INTERFACE ===
 
 export interface CombineResult {
@@ -87,7 +115,7 @@ export function useCombine(): UseCombineResult {
         }
 
         // Build set of discovered element IDs for hint checking
-        const discoveredIds = new Set(discoveredElements.keys());
+        const discoveredIds = getDiscoveredKeys(discoveredElements);
 
         // Check for hints first (local check before API call)
         const hintTrigger = checkHint(elementAId, elementBId, discoveredIds);
@@ -114,7 +142,7 @@ export function useCombine(): UseCombineResult {
 
         // For element A: try discovered elements, then scene elements
         if (!predefinedA) {
-          const discoveredA = discoveredElements.get(elementAId);
+          const discoveredA = getDiscoveredElement(discoveredElements, elementAId);
           if (discoveredA) {
             requestBody.elementAData = {
               name: discoveredA.name,
@@ -140,7 +168,7 @@ export function useCombine(): UseCombineResult {
 
         // For element B: try discovered elements, then scene elements
         if (!predefinedB) {
-          const discoveredB = discoveredElements.get(elementBId);
+          const discoveredB = getDiscoveredElement(discoveredElements, elementBId);
           if (discoveredB) {
             requestBody.elementBData = {
               name: discoveredB.name,

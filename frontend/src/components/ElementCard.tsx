@@ -159,10 +159,13 @@ export function ElementCard({
         <span
           className={cn(
             'absolute -bottom-5 left-1/2 -translate-x-1/2',
-            'whitespace-nowrap font-display',
+            'font-display text-center',
             'text-text-primary',
-            sizeClasses.name
+            sizeClasses.name,
+            // Truncate long names in small size to prevent overflow
+            size === 'sm' && 'max-w-[56px] truncate'
           )}
+          title={element.name}
         >
           {element.name}
         </span>
