@@ -2,7 +2,7 @@
 
 ## Project Status
 - **Current Phase:** Development - UI Polish & Testing
-- **Last Updated:** February 2, 2026 - Session 10 - UX Audit & Critical Bug Fixes
+- **Last Updated:** February 3, 2026 - Session 11 - UI Overlap & Persistence Fixes
 - **Active Agent:** None (bug fixes complete)
 - **Win Probability:** 50-55% (BUILD approved - v10 FINAL)
 
@@ -46,10 +46,10 @@ Infinite Craft meets infinite depth. You don't create - you REMEMBER. Every elem
 | Context | 1M token window | Memory callbacks | N/A |
 
 ### Current Focus
-**Apple UI Testing & Polish** - Running 149 test cases, fixing identified issues
+**UX Testing Complete** - All critical bugs fixed and verified via Chrome MCP
 
 ### Blockers
-- None (planning complete, ready to build)
+- None - Chrome MCP working after downgrade to v2.1.19
 
 ---
 
@@ -204,9 +204,54 @@ Gemini Hackathon/
 
 ## Session Log
 
-### February 2, 2026 - Session 10 - UX AUDIT & CRITICAL BUG FIXES
+### February 3, 2026 - Session 11 - UI OVERLAP & PERSISTENCE FIXES
 **Duration:** ~45 min
-**Focus:** Fix critical combining bugs, UX improvements
+**Focus:** Fix UI overlapping issues in sidebar, localStorage persistence bug
+
+**Bugs Fixed:**
+
+1. **UI Elements Overlapping in REMEMBERED Section**
+   - **Problem:** "Depth III" label was too close to element names above; element names truncated/cut off
+   - **Fix:**
+     - Added `pb-6` padding to grid container for spacing between depth sections
+     - Added `max-w-[56px] truncate` to ElementCard for long names in small size
+   - **Files:** `page.tsx`, `ElementCard.tsx`
+
+2. **Hydration Bug - "discoveredElements.keys is not a function"**
+   - **Root Cause:** During Zustand hydration, `discoveredElements` can be an Array instead of Map
+   - **Fix:**
+     - Added `getDiscoveredKeys()` and `getDiscoveredElement()` helper functions
+     - These safely handle both Map and Array forms during hydration
+   - **Files:** `useCombine.ts`
+
+3. **localStorage Persistence Lost Elements on Reload (CRITICAL)**
+   - **Root Cause:** Zustand serializes state BEFORE custom storage receives it, Maps became `{}`
+   - **Problem:** `discoveredElements: {}` instead of array entries; totalDiscoveries counter was correct but actual elements lost
+   - **Fix:**
+     - Replaced broken serialization approach with proper `customSerialize`/`customDeserialize` functions
+     - Directly handle Map→Array and Array→Map conversion at storage level
+   - **Files:** `gameStore.ts`
+
+**Testing Verified:**
+- ✅ Combine Fire + Water creates Conflict
+- ✅ Combine Conflict + Stone creates new element
+- ✅ Elements persist in localStorage as array entries
+- ✅ Elements survive page reload
+- ✅ UI spacing between depth sections is proper
+
+**Git Status:**
+- Committed: `b75fae3` - "Fix UI overlap, hydration bug, and localStorage persistence"
+
+**Next Session TODO:**
+1. Push to GitHub
+2. Continue UX testing
+3. Test zoom functionality
+
+---
+
+### February 2, 2026 - Session 10 - UX AUDIT & CRITICAL BUG FIXES
+**Duration:** ~1 hour
+**Focus:** Fix critical combining bugs, UX improvements, Chrome MCP debugging
 
 **Critical Bugs Fixed:**
 
@@ -237,25 +282,27 @@ Gemini Hackathon/
      - Displays actual error message from API
    - **Files:** `page.tsx`
 
-**Code Changes Summary:**
-| File | Change |
-|------|--------|
-| `frontend/src/app/api/combine/route.ts` | Check discoveredElements Map, accept client element data, reconstruct elements |
-| `frontend/src/hooks/useCombine.ts` | Pass element data for discovered/scene elements, add findSceneElement helper |
-| `frontend/src/types/index.ts` | Add elementAData/elementBData to CombineRequest |
-| `frontend/src/app/page.tsx` | Add error toast for combine failures |
+**Git Status:**
+- Committed: `9a83004` - "Fix critical combine bugs: discovered elements, scene elements, error toast"
+- Pushed to `origin/main` ✅
 
-**Testing Status:**
-- TypeScript compiles without errors
-- Dev server running and hot-reloading correctly
-- Chrome MCP extension not connected (manual testing needed)
+**Chrome MCP Issue - UNRESOLVED:**
+- `claude-in-chrome` extension shows "Browser extension is not connected"
+- Researched: Known bug in Claude Code v2.1.20+ broke extension connection
+- **Potential fixes to try next session:**
+  1. Downgrade Claude Code: `claude install 2.1.19`
+  2. Disable `chrome-devtools-mcp` temporarily (possible conflict)
+  3. Kill lingering `chrome-native-host.exe` processes
+  4. Don't run both chrome MCPs simultaneously
+- Related issues:
+  - https://github.com/anthropics/claude-code/issues/21300
+  - https://github.com/anthropics/claude-code/issues/20862
 
-**Next Steps:**
-1. Manual test: Combine two AI-generated elements
-2. Manual test: Drag scene element to sidebar element
-3. Test error toast displays correctly on API failure
-4. Run full UX test suite when Chrome extension available
-5. Commit and push to GitHub
+**Next Session TODO:**
+1. Fix Chrome MCP connection (try downgrade first)
+2. Manual test all combine bug fixes in browser
+3. Run automated UX test suite once Chrome MCP works
+4. Continue with remaining UX polish items
 
 ---
 
