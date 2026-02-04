@@ -24,6 +24,14 @@ interface EvolutionState {
   isPlayerOpen: boolean;
 }
 
+// Canvas element with position
+interface CanvasElement {
+  id: string;
+  element: Element;
+  x: number;
+  y: number;
+}
+
 export default function GamePage() {
   const {
     primordials,
@@ -57,6 +65,10 @@ export default function GamePage() {
 
   // State to control error toast visibility
   const [showCombineError, setShowCombineError] = useState(false);
+
+  // Canvas elements state for Infinite Craft style workspace
+  const [canvasElements, setCanvasElements] = useState<CanvasElement[]>([]);
+  const canvasRef = useRef<HTMLDivElement>(null);
 
   // Show error toast when combine error occurs
   useEffect(() => {
@@ -169,6 +181,88 @@ export default function GamePage() {
       }
     }
   }, [combine, isCombining, startReveal]);
+
+  // Handle canvas combine - removes both elements and adds result
+  const handleCanvasCombine = useCallback(async (draggedCanvasId: string, targetCanvasId: string, dropX: number, dropY: number) => {
+    if (isCombining) return;
+
+    // Find the canvas elements
+    const draggedCanvas = canvasElements.find(ce => ce.id === draggedCanvasId);
+    const targetCanvas = canvasElements.find(ce => ce.id === targetCanvasId);
+
+    if (!draggedCanvas || !targetCanvas) return;
+
+    const result = await combine(draggedCanvas.element.id, targetCanvas.element.id);
+
+    if (result) {
+      const { element, isMilestone, isFirstDiscovery } = result;
+      console.log('Canvas Combined:', element.name, { isMilestone, isFirstDiscovery });
+
+      // Remove both elements and add result at target position
+      setCanvasElements(prev => {
+        const filtered = prev.filter(ce => ce.id !== draggedCanvasId && ce.id !== targetCanvasId);
+        const newCanvasElement: CanvasElement = {
+          id: `canvas-${Date.now()}`,
+          element: element,
+          x: targetCanvas.x,
+          y: targetCanvas.y,
+        };
+        return [...filtered, newCanvasElement];
+      });
+
+      // If it's a milestone and first discovery, trigger the reveal animation
+      if (isMilestone && isFirstDiscovery && element.category === 'milestone') {
+        startReveal(element);
+      }
+    }
+  }, [combine, isCombining, canvasElements, startReveal]);
+
+  // Handle dropping element from sidebar onto canvas
+  const handleCanvasDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    const elementId = e.dataTransfer.getData('text/plain');
+    if (!elementId || !canvasRef.current) return;
+
+    // Find the element from primordials or discovered
+    let element: Element | undefined = primordials.find(p => p.id === elementId);
+    if (!element) {
+      element = discovered.find(d => d.id === elementId);
+    }
+    if (!element) return;
+
+    // Get drop position relative to canvas
+    const rect = canvasRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left - 32; // Center the element (assuming ~64px width)
+    const y = e.clientY - rect.top - 32;
+
+    // Add element to canvas
+    const newCanvasElement: CanvasElement = {
+      id: `canvas-${Date.now()}-${elementId}`,
+      element: element,
+      x: Math.max(0, Math.min(x, rect.width - 64)),
+      y: Math.max(0, Math.min(y, rect.height - 64)),
+    };
+
+    setCanvasElements(prev => [...prev, newCanvasElement]);
+  }, [primordials, discovered]);
+
+  // Handle drag over canvas
+  const handleCanvasDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'copy';
+  }, []);
+
+  // Handle moving element on canvas
+  const handleCanvasElementMove = useCallback((canvasId: string, newX: number, newY: number) => {
+    setCanvasElements(prev => prev.map(ce =>
+      ce.id === canvasId ? { ...ce, x: newX, y: newY } : ce
+    ));
+  }, []);
+
+  // Remove element from canvas
+  const handleCanvasElementRemove = useCallback((canvasId: string) => {
+    setCanvasElements(prev => prev.filter(ce => ce.id !== canvasId));
+  }, []);
 
   // Cleanup evolution polling on unmount
   useEffect(() => {
@@ -383,7 +477,7 @@ export default function GamePage() {
                 <h2 className="font-display text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">
                   Primordials
                 </h2>
-                <div className="grid grid-cols-4 gap-3">
+                <div className="grid grid-cols-4 gap-x-3 gap-y-8 pb-6">
                   {primordials.map((element, index) => (
                     <motion.div
                       key={element.id}
@@ -405,7 +499,7 @@ export default function GamePage() {
 
               {/* Remembered (discovered) section */}
               <div className="p-4 flex-1 overflow-y-auto">
-                <h2 className="font-display text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">
+                <h2 className="font-display text-sm font-semibold text-text-secondary uppercase tracking-wider mb-6">
                   Remembered
                 </h2>
 
@@ -430,7 +524,7 @@ export default function GamePage() {
                           )}>
                             Depth {depth}
                           </h3>
-                          <div className="grid grid-cols-4 gap-x-2 gap-y-8 pb-6">
+                          <div className="grid grid-cols-4 gap-x-2 gap-y-8 pb-10">
                             {elementsAtDepth.map((element: Element) => (
                               <ElementCard
                                 key={element.id}
@@ -474,14 +568,87 @@ export default function GamePage() {
 
         {/* Main viewport area */}
         <main className="flex-1 flex flex-col p-4 overflow-hidden bg-white">
-          {/* Zoom Viewport - now takes full height since CombineZone is removed */}
-          <div className="flex-1 min-h-0">
-            <ZoomViewport
-              onElementClick={handleZoomIntoElement}
-              onCombine={handleElementCombine}
-              className="h-full"
-            />
-          </div>
+          {/* Canvas workspace for Infinite Craft style combining */}
+          {!currentScene ? (
+            <div
+              ref={canvasRef}
+              className="flex-1 min-h-0 relative rounded-2xl border-2 border-dashed border-border/50 bg-gradient-to-br from-surface/50 to-white overflow-hidden"
+              onDrop={handleCanvasDrop}
+              onDragOver={handleCanvasDragOver}
+            >
+              {/* Empty state message */}
+              {canvasElements.length === 0 && (
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-text-muted">
+                  <div className="w-16 h-16 rounded-2xl bg-surface/80 flex items-center justify-center mb-4">
+                    <span className="text-3xl">✨</span>
+                  </div>
+                  <p className="font-display text-sm">Drag elements here to combine</p>
+                  <p className="font-whisper text-xs italic mt-1">Drop one element onto another to create something new</p>
+                </div>
+              )}
+
+              {/* Render canvas elements */}
+              {canvasElements.map((canvasEl) => (
+                <div
+                  key={canvasEl.id}
+                  className="absolute"
+                  style={{ left: canvasEl.x, top: canvasEl.y }}
+                  draggable
+                  onDragStart={(e) => {
+                    e.dataTransfer.setData('text/plain', canvasEl.element.id);
+                    e.dataTransfer.setData('canvas-id', canvasEl.id);
+                    e.dataTransfer.effectAllowed = 'move';
+                  }}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const draggedCanvasId = e.dataTransfer.getData('canvas-id');
+                    if (draggedCanvasId && draggedCanvasId !== canvasEl.id) {
+                      handleCanvasCombine(draggedCanvasId, canvasEl.id, canvasEl.x, canvasEl.y);
+                    }
+                  }}
+                >
+                  <motion.div
+                    initial={{ scale: 0, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 0, opacity: 0 }}
+                    whileHover={{ scale: 1.05 }}
+                    className="cursor-move"
+                  >
+                    <ElementCard
+                      element={canvasEl.element}
+                      size="md"
+                      draggable={false}
+                      onClick={() => handleElementZoom(canvasEl.element)}
+                    />
+                  </motion.div>
+                  {/* Remove button */}
+                  <button
+                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-rose/80 text-white text-xs flex items-center justify-center hover:bg-rose transition-colors shadow-sm z-10"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleCanvasElementRemove(canvasEl.id);
+                    }}
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* Zoom Viewport - shown when in a zoom scene */
+            <div className="flex-1 min-h-0">
+              <ZoomViewport
+                onElementClick={handleZoomIntoElement}
+                onCombine={handleElementCombine}
+                className="h-full"
+              />
+            </div>
+          )}
         </main>
       </div>
 
