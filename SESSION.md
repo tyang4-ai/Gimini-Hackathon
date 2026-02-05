@@ -1,9 +1,9 @@
 # Gemini 3 Hackathon - Session Context
 
 ## Project Status
-- **Current Phase:** Development - UI Polish & Testing
-- **Last Updated:** February 3, 2026 - Session 11 - UI Overlap & Persistence Fixes
-- **Active Agent:** None (bug fixes complete)
+- **Current Phase:** Development - All Features Wired
+- **Last Updated:** February 4, 2026 - Session 13 - Feature Wiring Complete
+- **Active Agent:** None (ready for testing)
 - **Win Probability:** 50-55% (BUILD approved - v10 FINAL)
 
 ---
@@ -46,10 +46,11 @@ Infinite Craft meets infinite depth. You don't create - you REMEMBER. Every elem
 | Context | 1M token window | Memory callbacks | N/A |
 
 ### Current Focus
-**UX Testing Complete** - All critical bugs fixed and verified via Chrome MCP
+**All Features Wired** - Ready for comprehensive Chrome MCP testing
 
 ### Blockers
 - None - Chrome MCP working after downgrade to v2.1.19
+- Need to pre-generate evolution videos for demo mode
 
 ---
 
@@ -99,12 +100,13 @@ Infinite Craft meets infinite depth. You don't create - you REMEMBER. Every elem
 - [x] Day 3: APIs working (combine, zoom tested)
 
 ### Next Up
-- [ ] Integration: Wire up combine/zoom with UI
-- [ ] Add MilestoneReveal animation to game flow
-- [ ] Test evolution API with milestone
-- [ ] Day 6-7: Technical Showcase + Polish
-- [ ] Day 8: Sound + Demo Mode
-- [ ] Day 9-10: BUFFER (Evolution P2 if time)
+- [x] Integration: Wire up combine/zoom with UI
+- [x] Add MilestoneReveal animation to game flow
+- [x] Wire all sounds (Web Audio API)
+- [x] Complete demo mode integration
+- [x] Wire milestone images to reveal
+- [ ] Chrome MCP visual verification
+- [ ] Pre-generate evolution videos with Veo
 - [ ] Day 11-12: Demo & Submit
 
 ---
@@ -203,6 +205,171 @@ Gemini Hackathon/
 ---
 
 ## Session Log
+
+### February 4, 2026 - Session 13 - FEATURE WIRING COMPLETE
+**Duration:** ~1 hour
+**Focus:** Wire up all missing features per implementation plan
+
+**Features Completed:**
+
+1. **Phase 1: Quick Wins**
+   - ✅ Hint auto-dismiss: Added 4-second timer to `setHint()` in gameStore.ts
+   - ✅ Evolution timeout: Added 10-minute max timeout to polling in page.tsx
+
+2. **Phase 2: Context Callbacks**
+   - ✅ Enabled contextCallback/memoryFragment in prompts.ts (10%/20% chance)
+   - ✅ Context callbacks already display via ZoomViewport component
+
+3. **Phase 3: Web Audio Sound System**
+   - ✅ Created `soundGenerator.ts` with Web Audio API synth sounds:
+     - `hover`: Short high blip (100ms, 800Hz sine wave)
+     - `drop`: Soft thud (150ms, 200Hz with decay)
+     - `combine`: Ascending chime (300ms, harmonics)
+     - `milestone`: Majestic C-E-G arpeggio with reverb (2s)
+     - `zoom`: Whoosh frequency sweep (400ms)
+     - `error`: Descending buzz (200ms sawtooth)
+   - ✅ Updated `audioStore.ts` to use Web Audio instead of MP3 files
+   - ✅ Wired sounds into page.tsx for all interactions
+   - ✅ Added hover sound with debounce to ElementCard.tsx
+
+4. **Phase 4: Demo Mode**
+   - ✅ Added demo mode to `/api/combine` with 500ms delay
+   - ✅ Added demo mode to `/api/zoom` with random fallback
+   - ✅ Added demo mode to `/api/evolution` with fake operation tracking
+   - ✅ Created demo evolution video mapping (9 milestones)
+
+5. **Phase 5: Milestone Images**
+   - ✅ Updated MilestoneReveal to display images with blur animation
+   - ✅ Added imageUrl prop and loading/error states
+   - ✅ Passed imageUrl from page.tsx to reveal component
+   - ✅ Verified all 9 milestone images exist in /public/milestones/
+
+**Files Modified (14 total):**
+| File | Changes |
+|------|---------|
+| `stores/gameStore.ts` | Auto-dismiss timer for hints |
+| `lib/soundGenerator.ts` | **NEW** - Web Audio API synthesis |
+| `stores/audioStore.ts` | Replaced MP3 loading with Web Audio |
+| `app/page.tsx` | Wire sounds, evolution timeout, imageUrl prop |
+| `lib/prompts.ts` | Enabled contextCallback/memoryFragment |
+| `components/ElementCard.tsx` | Added hover sound with debounce |
+| `components/MilestoneReveal.tsx` | Added image display with blur |
+| `app/api/combine/route.ts` | Demo mode check with delay |
+| `app/api/zoom/route.ts` | Demo mode check with fallback |
+| `app/api/evolution/route.ts` | Demo mode with fake operations |
+
+**TypeScript Status:**
+- ✅ No new errors in modified files
+- Pre-existing zustand typing issues remain (unrelated to changes)
+
+**Dev Server:**
+- ✅ Starts successfully on port 3001
+
+**Next Steps:**
+1. Chrome MCP visual verification
+2. Test all 6 sounds working
+3. Test milestone image blur animation
+4. Pre-generate evolution videos with Veo
+5. Run full demo mode test
+
+---
+
+### February 4, 2026 - Session 12 - UI REDESIGN & CHROME MCP DEBUGGING
+**Duration:** ~1 hour
+**Focus:** Complete UI redesign + Debug Chrome MCP connection issues
+
+---
+
+#### Part 1: UI Redesign Implementation ✅
+
+**Theme:** "Clean Galactic Fantasy" - Dark Mode with Glassmorphism
+
+**Files Modified:**
+1. `frontend/src/app/globals.css` - Complete CSS overhaul
+2. `frontend/tailwind.config.ts` - New color palette, shadows, fonts
+3. `frontend/src/app/layout.tsx` - New fonts (Cinzel, Inter, JetBrains Mono)
+4. `frontend/src/app/page.tsx` - All UI components updated
+5. `frontend/src/components/ElementCard.tsx` - New card styling
+
+**Major Changes:**
+
+1. **Color Palette - "The Void"**
+   - Background: `#050507` (deep space black)
+   - Accents: Cyan `#22d3ee`, Purple `#c084fc`, Gold `#fbbf24`
+   - Text: `#e2e8f0` (light gray), `#94a3b8` (secondary)
+
+2. **Typography**
+   - Display: Cinzel (serif, elegant headers)
+   - Body: Inter (clean, modern)
+   - Mono: JetBrains Mono (technical elements)
+
+3. **Glass Panels**
+   - Background: `rgba(13, 13, 18, 0.75)` with blur
+   - Border: `rgba(255, 255, 255, 0.08)`
+   - Applied to sidebar and canvas
+
+4. **Cosmic Background**
+   - Multi-layer: Nebula gradient + 40px grid pattern
+   - Vignette overlay for depth
+   - Increased particle opacity (50%)
+
+5. **Element Cards**
+   - New size: 88x100px
+   - Glass gradient background
+   - Hover: translateY(-5px), cyan glow
+   - Labels inside card at bottom
+   - Gray → white text on hover
+
+6. **Layout Changes**
+   - Header: 72px, transparent, purple glow logo
+   - Sidebar: 340px fixed, glass panel, 24px border radius
+   - Canvas: Glass panel effect
+   - Search bar added to sidebar
+
+**Verification:**
+- ✅ Dev server running (200 OK)
+- ✅ TypeScript compiles
+- ✅ All imports correct
+
+---
+
+#### Part 2: Chrome MCP Debugging
+
+**Problem:** Chrome MCP tools returning "Browser extension is not connected"
+
+**Debugging Steps Taken:**
+1. Verified Claude Code version: 2.1.31
+2. Verified native messaging host registry entries ✅
+3. Verified native host manifest file ✅
+4. Verified extension installed in Chrome Profile 4 ✅
+5. Ran `/chrome` and `/mcp` commands - said "Reconnected" but still failed
+6. Tested native host manually - **FOUND CRASH BUG**
+
+**ROOT CAUSE FOUND:**
+Claude Code 2.1.31 has a **Bun runtime crash bug** in the Chrome native host:
+```
+panic(main thread): Internal assertion failure
+oh no: Bun has crashed. This indicates a bug in Bun, not your code.
+```
+
+The native host process crashes before it can connect to the Chrome extension.
+
+**Fix Options:**
+1. **Downgrade Claude Code** to 2.1.19: `npm install -g @anthropic-ai/claude-code@2.1.19`
+2. **Report bug** at: https://github.com/anthropics/claude-code/issues
+3. **Crash report link:** https://bun.report/1.3.5/e_11e86cebEugggC++08F+mvBoxhkf0389e__0shkwCA0eNrzzCtJLcpLzFFILC5OLSrJzM9TSEvMzCktSgUAiSkKPg
+
+---
+
+**Next Session TODO:**
+1. Downgrade Claude Code to 2.1.19 to fix Chrome MCP
+2. Visual verification of UI redesign with Chrome MCP
+3. Test drag/drop functionality
+4. Test combine mechanics
+5. Test hover effects
+6. Push UI changes to GitHub
+
+---
 
 ### February 3, 2026 - Session 11 - UI OVERLAP & PERSISTENCE FIXES
 **Duration:** ~45 min

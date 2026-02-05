@@ -267,6 +267,16 @@ export const useGameStore = create<GameStore>()(
 
       setHint: (hint: string | null) => {
         set({ showHint: hint });
+
+        // Auto-dismiss hint after 4 seconds
+        if (hint !== null) {
+          setTimeout(() => {
+            // Only clear if this hint is still showing
+            if (get().showHint === hint) {
+              set({ showHint: null });
+            }
+          }, 4000);
+        }
       },
 
       // === STATS ACTIONS ===

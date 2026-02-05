@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import type { Element } from '@/types';
 import { cn } from '@/utils/cn';
 import { INTERMEDIATE_ELEMENTS } from '@/lib/elements';
+import { useSoundEffect } from '@/hooks/useSound';
 
 interface ElementCardProps {
   element: Element;
@@ -18,50 +19,49 @@ interface ElementCardProps {
 
 const sizeConfig = {
   sm: {
-    container: 'w-12 h-12',
-    emoji: 'text-2xl',
-    name: 'text-[10px]',
-    whisper: 'text-[8px]',
+    container: 'w-[88px] h-[100px]',
+    emoji: 'text-[40px]',
+    name: 'text-[11px]',
+    whisper: 'text-[9px]',
   },
   md: {
-    container: 'w-16 h-16',
-    emoji: 'text-3xl',
+    container: 'w-[88px] h-[100px]',
+    emoji: 'text-[40px]',
+    name: 'text-[11px]',
+    whisper: 'text-[9px]',
+  },
+  lg: {
+    container: 'w-[100px] h-[112px]',
+    emoji: 'text-[48px]',
     name: 'text-xs',
     whisper: 'text-[10px]',
   },
-  lg: {
-    container: 'w-20 h-20',
-    emoji: 'text-4xl',
-    name: 'text-sm',
-    whisper: 'text-xs',
-  },
 } as const;
 
-// Apple-style light theme category styles
 const categoryStyles = {
   primordial: {
-    base: 'bg-white border-teal/60',
+    base: 'bg-gradient-to-br from-white/5 to-white/[0.01] border-accent-cyan/30',
     shadow: 'shadow-card',
-    hoverShadow: '0 4px 16px rgba(0, 199, 190, 0.2)',
-    accentBg: 'bg-teal/5',
+    hoverShadow: '0 5px 15px rgba(34, 211, 238, 0.15)',
+    hoverBorder: 'var(--accent-cyan)',
   },
   milestone: {
-    base: 'bg-white border-gold/70',
+    base: 'bg-gradient-to-br from-white/5 to-white/[0.01] border-accent-gold/50',
     shadow: 'shadow-card',
-    hoverShadow: '0 4px 16px rgba(255, 149, 0, 0.25)',
-    accentBg: 'bg-gold/5',
+    hoverShadow: '0 5px 15px rgba(251, 191, 36, 0.2)',
+    hoverBorder: 'var(--accent-gold)',
   },
   intermediate: {
-    base: 'bg-white border-violet/50',
+    base: 'bg-gradient-to-br from-white/5 to-white/[0.01] border-accent-purple/40',
     shadow: 'shadow-card',
-    hoverShadow: '0 4px 16px rgba(175, 82, 222, 0.2)',
-    accentBg: 'bg-violet/5',
+    hoverShadow: '0 5px 15px rgba(192, 132, 252, 0.15)',
+    hoverBorder: 'var(--accent-purple)',
   },
   regular: {
-    base: 'bg-white border-border',
+    base: 'bg-gradient-to-br from-white/5 to-white/[0.01] border-border',
     shadow: 'shadow-card',
-    hoverShadow: '0 4px 16px rgba(0, 0, 0, 0.1)',
-    accentBg: 'bg-surface',
+    hoverShadow: '0 5px 15px rgba(34, 211, 238, 0.1)',
+    hoverBorder: 'var(--accent-cyan)',
   },
 } as const;
 
@@ -77,6 +77,19 @@ export function ElementCard({
   const sizeClasses = sizeConfig[size];
   const categoryClasses = categoryStyles[element.category];
   const [isDropTarget, setIsDropTarget] = useState(false);
+
+  // Sound effects with debounce
+  const playSound = useSoundEffect();
+  const lastHoverSoundRef = useRef<number>(0);
+  const HOVER_DEBOUNCE_MS = 100;
+
+  const handleMouseEnter = useCallback(() => {
+    const now = Date.now();
+    if (now - lastHoverSoundRef.current > HOVER_DEBOUNCE_MS) {
+      playSound('hover');
+      lastHoverSoundRef.current = now;
+    }
+  }, [playSound]);
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>) => {
     e.dataTransfer.setData('text/plain', element.id);
@@ -105,33 +118,32 @@ export function ElementCard({
 
   return (
     <div
+      className="group"
       draggable={draggable}
       onDragStart={handleDragStart}
       onDragOver={onCombine ? handleDragOver : undefined}
       onDragLeave={onCombine ? handleDragLeave : undefined}
       onDrop={onCombine ? handleDrop : undefined}
       onClick={onClick}
+      onMouseEnter={handleMouseEnter}
     >
       <motion.div
         className={cn(
-          // Base styles
           'relative flex flex-col items-center justify-center',
-          'rounded-xl border cursor-pointer select-none',
-          'transition-all duration-200',
+          'rounded-[12px] border cursor-grab select-none',
+          'transition-all duration-300',
           sizeClasses.container,
-          // Category-specific styles
           categoryClasses.base,
           categoryClasses.shadow,
-          categoryClasses.accentBg,
-          // Milestone special treatment - subtle ring
-          element.category === 'milestone' && 'ring-1 ring-gold/20',
-          // Drop target highlight
-          isDropTarget && 'ring-2 ring-accent-blue border-accent-blue scale-110 shadow-accent-teal',
+          element.category === 'milestone' && 'ring-1 ring-accent-gold/30',
+          isDropTarget && 'ring-2 ring-accent-cyan border-accent-cyan scale-110',
           className
         )}
         whileHover={{
-          scale: 1.08,
+          scale: 1.05,
+          y: -5,
           boxShadow: categoryClasses.hoverShadow,
+          borderColor: categoryClasses.hoverBorder,
         }}
         whileTap={{ scale: 0.98 }}
         whileDrag={{ scale: 1.05, opacity: 0.9 }}
@@ -155,15 +167,15 @@ export function ElementCard({
           {element.emoji}
         </span>
 
-        {/* Element name - shown below card for better layout */}
+        {/* Element name - inside card at bottom */}
         <span
           className={cn(
-            'absolute -bottom-5 left-1/2 -translate-x-1/2',
-            'font-display text-center',
-            'text-text-primary',
+            'absolute bottom-2 left-1/2 -translate-x-1/2',
+            'font-body text-center',
+            'text-[#94a3b8]',
             sizeClasses.name,
-            // Truncate long names in small size to prevent overflow
-            size === 'sm' && 'max-w-[56px] truncate'
+            'max-w-[80px] truncate tracking-[0.5px]',
+            'group-hover:text-white transition-colors'
           )}
           title={element.name}
         >
@@ -176,7 +188,7 @@ export function ElementCard({
             className={cn(
               'absolute left-1/2 -translate-x-1/2',
               'whitespace-nowrap font-whisper italic',
-              'text-teal',
+              'text-accent-cyan',
               sizeClasses.whisper,
               'max-w-[150px] truncate text-center',
               element.category === 'intermediate' ? '-bottom-10' : '-bottom-10'
@@ -195,7 +207,7 @@ export function ElementCard({
             className={cn(
               'absolute -bottom-[52px] left-1/2 -translate-x-1/2',
               'whitespace-nowrap font-whisper italic',
-              'text-gold text-[9px]',
+              'text-accent-gold text-[9px]',
               'max-w-[180px] truncate text-center'
             )}
             initial={{ opacity: 0, y: -5 }}
@@ -209,7 +221,7 @@ export function ElementCard({
         {/* Milestone indicator - subtle accent dot */}
         {element.category === 'milestone' && (
           <motion.div
-            className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-gold"
+            className="absolute -top-1 -right-1 w-2 h-2 rounded-full bg-accent-gold"
             animate={{
               opacity: [0.6, 1, 0.6],
             }}
@@ -227,9 +239,9 @@ export function ElementCard({
             className="absolute inset-0 rounded-xl pointer-events-none"
             animate={{
               boxShadow: [
-                '0 0 0px rgba(175, 82, 222, 0)',
-                '0 0 12px rgba(175, 82, 222, 0.4)',
-                '0 0 0px rgba(175, 82, 222, 0)',
+                '0 0 0px rgba(192, 132, 252, 0)',
+                '0 0 12px rgba(192, 132, 252, 0.4)',
+                '0 0 0px rgba(192, 132, 252, 0)',
               ],
             }}
             transition={{

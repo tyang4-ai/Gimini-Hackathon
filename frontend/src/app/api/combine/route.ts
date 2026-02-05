@@ -8,6 +8,7 @@ import {
   INTERMEDIATE_ELEMENTS,
   findElementById,
 } from '@/lib/elements';
+import { DEMO_MODE, getDemoCombine } from '@/lib/demoData';
 import type {
   Element,
   RegularElement,
@@ -65,6 +66,22 @@ export async function POST(request: NextRequest): Promise<NextResponse<CombineRe
         { success: false, error: 'Missing element IDs' },
         { status: 400 }
       );
+    }
+
+    // Check for demo mode - return cached result if available
+    if (DEMO_MODE) {
+      const demoResult = getDemoCombine(elementAId, elementBId);
+      if (demoResult) {
+        console.log('[DEMO] Using cached combine for:', elementAId, '+', elementBId);
+        // Add artificial delay to simulate "thinking"
+        await new Promise(resolve => setTimeout(resolve, 500));
+        return NextResponse.json({
+          success: true,
+          result: demoResult,
+        });
+      }
+      // If no cached data in demo mode, log and continue to regular flow
+      console.log('[DEMO] No cached combine for:', elementAId, '+', elementBId, '- falling back to API');
     }
 
     // Find the elements - check predefined first, then discovered elements, then client-provided data

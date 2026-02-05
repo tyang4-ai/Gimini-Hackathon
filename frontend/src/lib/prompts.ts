@@ -128,8 +128,8 @@ Respond with a JSON object exactly matching this schema:
    - Fire: "linear-gradient(135deg, #ff6b35 0%, #ffc145 50%, #2b1f4f 100%)"
    - Water: "linear-gradient(135deg, #00a8e8 0%, #1c2541 100%)"
    - Cosmic: "linear-gradient(135deg, #1c2541 0%, #241332 50%, #2b1f4f 100%)"
-5. **Context Callback**: Set to null. (Disabled for now)
-6. **Memory Fragment**: Set to null. (Disabled for now - keeps response short)
+5. **Context Callback**: 10% of the time, include a contextCallback that references something the Witness discovered earlier. Use elements from the "Recent discoveries" list above. Example: {"text": "This reminds you of the Ember you found within Fire...", "referencedElementId": "ember", "referencedDepth": "II"}. Set to null the other 90% of the time.
+6. **Memory Fragment**: 20% of the time, include a very short (max 15 words) lore hint. Set to null the other 80% of the time.
 
 ## Examples of Scene Descriptions
 

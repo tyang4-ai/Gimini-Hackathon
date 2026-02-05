@@ -9,6 +9,7 @@ import { MilestoneReveal } from '@/components/MilestoneReveal';
 import { EvolutionPlayer } from '@/components/EvolutionPlayer';
 import { ParticleField } from '@/components/ui/ParticleField';
 import { useCombine } from '@/hooks/useCombine';
+import { useSoundEffect } from '@/hooks/useSound';
 import { cn } from '@/utils/cn';
 import type { Element, SceneElement, ZoomResponse, DepthTier } from '@/types';
 
@@ -59,9 +60,14 @@ export default function GamePage() {
   // Evolution tracking state
   const [evolution, setEvolution] = useState<EvolutionState | null>(null);
   const evolutionPollingRef = useRef<NodeJS.Timeout | null>(null);
+  const evolutionStartTimeRef = useRef<number | null>(null);
+  const EVOLUTION_TIMEOUT_MS = 10 * 60 * 1000; // 10 minutes max
 
   // Combine hook for element-to-element combining
   const { combine, isLoading: isCombining, error: combineError } = useCombine();
+
+  // Sound effects hook
+  const playSound = useSoundEffect();
 
   // State to control error toast visibility
   const [showCombineError, setShowCombineError] = useState(false);
@@ -98,6 +104,8 @@ export default function GamePage() {
   const handleZoomIntoElement = useCallback(async (element: SceneElement) => {
     if (!element.canZoomInto) return;
 
+    // Play zoom sound
+    playSound('zoom');
     setIsZoomLoading(true);
 
     try {
@@ -129,10 +137,12 @@ export default function GamePage() {
     } finally {
       setIsZoomLoading(false);
     }
-  }, [currentScene, pushZoomPath]);
+  }, [currentScene, pushZoomPath, playSound]);
 
   // Handle zoom into element from sidebar (primordials or discovered)
   const handleElementZoom = useCallback(async (element: Element) => {
+    // Play zoom sound
+    playSound('zoom');
     setIsZoomLoading(true);
 
     try {
@@ -158,29 +168,37 @@ export default function GamePage() {
     } finally {
       setIsZoomLoading(false);
     }
-  }, [pushZoomPath]);
+  }, [pushZoomPath, playSound]);
 
   // Handle zoom out / ascend
   const handleZoomOut = useCallback(() => {
+    playSound('zoom');
     popZoomPath();
-  }, [popZoomPath]);
+  }, [popZoomPath, playSound]);
 
   // Handle element-to-element combine (Infinite Craft style)
   const handleElementCombine = useCallback(async (draggedId: string, targetId: string) => {
     if (isCombining) return;
 
-    const result = await combine(draggedId, targetId);
+    try {
+      const result = await combine(draggedId, targetId);
 
-    if (result) {
-      const { element, isMilestone, isFirstDiscovery } = result;
-      console.log('Combined:', element.name, { isMilestone, isFirstDiscovery });
+      if (result) {
+        const { element, isMilestone, isFirstDiscovery } = result;
+        console.log('Combined:', element.name, { isMilestone, isFirstDiscovery });
 
-      // If it's a milestone and first discovery, trigger the reveal animation
-      if (isMilestone && isFirstDiscovery && element.category === 'milestone') {
-        startReveal(element);
+        // Play combine success sound
+        playSound('combine');
+
+        // If it's a milestone and first discovery, trigger the reveal animation
+        if (isMilestone && isFirstDiscovery && element.category === 'milestone') {
+          startReveal(element);
+        }
       }
+    } catch {
+      playSound('error');
     }
-  }, [combine, isCombining, startReveal]);
+  }, [combine, isCombining, startReveal, playSound]);
 
   // Handle canvas combine - removes both elements and adds result
   const handleCanvasCombine = useCallback(async (draggedCanvasId: string, targetCanvasId: string, dropX: number, dropY: number) => {
@@ -192,30 +210,37 @@ export default function GamePage() {
 
     if (!draggedCanvas || !targetCanvas) return;
 
-    const result = await combine(draggedCanvas.element.id, targetCanvas.element.id);
+    try {
+      const result = await combine(draggedCanvas.element.id, targetCanvas.element.id);
 
-    if (result) {
-      const { element, isMilestone, isFirstDiscovery } = result;
-      console.log('Canvas Combined:', element.name, { isMilestone, isFirstDiscovery });
+      if (result) {
+        const { element, isMilestone, isFirstDiscovery } = result;
+        console.log('Canvas Combined:', element.name, { isMilestone, isFirstDiscovery });
 
-      // Remove both elements and add result at target position
-      setCanvasElements(prev => {
-        const filtered = prev.filter(ce => ce.id !== draggedCanvasId && ce.id !== targetCanvasId);
-        const newCanvasElement: CanvasElement = {
-          id: `canvas-${Date.now()}`,
-          element: element,
-          x: targetCanvas.x,
-          y: targetCanvas.y,
-        };
-        return [...filtered, newCanvasElement];
-      });
+        // Play combine success sound
+        playSound('combine');
 
-      // If it's a milestone and first discovery, trigger the reveal animation
-      if (isMilestone && isFirstDiscovery && element.category === 'milestone') {
-        startReveal(element);
+        // Remove both elements and add result at target position
+        setCanvasElements(prev => {
+          const filtered = prev.filter(ce => ce.id !== draggedCanvasId && ce.id !== targetCanvasId);
+          const newCanvasElement: CanvasElement = {
+            id: `canvas-${Date.now()}`,
+            element: element,
+            x: targetCanvas.x,
+            y: targetCanvas.y,
+          };
+          return [...filtered, newCanvasElement];
+        });
+
+        // If it's a milestone and first discovery, trigger the reveal animation
+        if (isMilestone && isFirstDiscovery && element.category === 'milestone') {
+          startReveal(element);
+        }
       }
+    } catch {
+      playSound('error');
     }
-  }, [combine, isCombining, canvasElements, startReveal]);
+  }, [combine, isCombining, canvasElements, startReveal, playSound]);
 
   // Handle dropping element from sidebar onto canvas
   const handleCanvasDrop = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -226,9 +251,12 @@ export default function GamePage() {
     // Find the element from primordials or discovered
     let element: Element | undefined = primordials.find(p => p.id === elementId);
     if (!element) {
-      element = discovered.find(d => d.id === elementId);
+      element = discovered.find((d: Element) => d.id === elementId);
     }
     if (!element) return;
+
+    // Play drop sound
+    playSound('drop');
 
     // Get drop position relative to canvas
     const rect = canvasRef.current.getBoundingClientRect();
@@ -244,7 +272,7 @@ export default function GamePage() {
     };
 
     setCanvasElements(prev => [...prev, newCanvasElement]);
-  }, [primordials, discovered]);
+  }, [primordials, discovered, playSound]);
 
   // Handle drag over canvas
   const handleCanvasDragOver = useCallback((e: React.DragEvent<HTMLDivElement>) => {
@@ -284,6 +312,9 @@ export default function GamePage() {
       isPlayerOpen: false,
     });
 
+    // Record start time for timeout tracking
+    evolutionStartTimeRef.current = Date.now();
+
     try {
       // Start the evolution job via /api/evolution
       const response = await fetch('/api/evolution', {
@@ -297,6 +328,7 @@ export default function GamePage() {
       if (!data.success || !data.operationName) {
         console.error('Failed to start evolution:', data.error);
         setEvolution(null);
+        evolutionStartTimeRef.current = null;
         return;
       }
 
@@ -304,6 +336,19 @@ export default function GamePage() {
       const operationName = data.operationName;
       evolutionPollingRef.current = setInterval(async () => {
         try {
+          // Check for timeout (10 minutes max)
+          if (evolutionStartTimeRef.current && Date.now() - evolutionStartTimeRef.current > EVOLUTION_TIMEOUT_MS) {
+            console.error('Evolution timed out after 10 minutes');
+            setEvolution(null);
+            evolutionStartTimeRef.current = null;
+
+            if (evolutionPollingRef.current) {
+              clearInterval(evolutionPollingRef.current);
+              evolutionPollingRef.current = null;
+            }
+            return;
+          }
+
           const statusResponse = await fetch(`/api/evolution?operationName=${encodeURIComponent(operationName)}`);
           const statusData = await statusResponse.json();
 
@@ -320,6 +365,7 @@ export default function GamePage() {
             );
 
             // Stop polling
+            evolutionStartTimeRef.current = null;
             if (evolutionPollingRef.current) {
               clearInterval(evolutionPollingRef.current);
               evolutionPollingRef.current = null;
@@ -327,6 +373,7 @@ export default function GamePage() {
           } else if (statusData.status === 'failed') {
             console.error('Evolution failed:', statusData.error);
             setEvolution(null);
+            evolutionStartTimeRef.current = null;
 
             if (evolutionPollingRef.current) {
               clearInterval(evolutionPollingRef.current);
@@ -341,8 +388,9 @@ export default function GamePage() {
     } catch (error) {
       console.error('Error starting evolution:', error);
       setEvolution(null);
+      evolutionStartTimeRef.current = null;
     }
-  }, []);
+  }, [EVOLUTION_TIMEOUT_MS]);
 
   // Handle milestone reveal completion
   const handleRevealComplete = useCallback(() => {
@@ -385,33 +433,33 @@ export default function GamePage() {
   };
 
   return (
-    <div className="min-h-screen bg-white bg-dot-pattern flex flex-col relative">
+    <div className="min-h-screen cosmic-bg flex flex-col relative">
       {/* Subtle background particle effect */}
-      <div className="fixed inset-0 pointer-events-none z-0 opacity-30">
+      <div className="fixed inset-0 pointer-events-none z-0 opacity-50">
         <ParticleField particleCount={30} speed={0.3} />
       </div>
 
-      {/* Header - Apple-style frosted glass */}
-      <header className="h-14 border-b border-border bg-white/80 backdrop-blur-xl px-4 flex items-center justify-between shrink-0 relative z-10">
+      {/* Header - Transparent with purple glow logo */}
+      <header className="h-[72px] bg-transparent px-8 flex items-center justify-between shrink-0 relative z-[100]">
         {/* Logo and title */}
         <div className="flex items-center gap-3">
           {/* Mobile sidebar toggle */}
           {isMobile && (
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              className="p-2 rounded-lg bg-surface hover:bg-surface/80 transition-colors"
+              className="p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
             >
               <span className="text-lg text-text-primary">{isSidebarOpen ? '✕' : '☰'}</span>
             </button>
           )}
 
           <motion.h1
-            className="font-display text-xl font-bold text-text-primary tracking-wider"
+            className="font-display text-2xl font-bold text-white tracking-wider"
+            style={{ textShadow: '0 0 20px rgba(192, 132, 252, 0.5)' }}
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
           >
-            <span className="text-accent-orange">THE</span>{' '}
-            <span className="text-accent-violet">MEMORY</span>
+            THE MEMORY
           </motion.h1>
         </div>
 
@@ -419,7 +467,7 @@ export default function GamePage() {
         <div className="flex items-center gap-6">
           {/* Discovery count */}
           <div className="flex items-center gap-2">
-            <span className="text-text-secondary text-sm">Remembered:</span>
+            <span className="text-[#94a3b8] uppercase tracking-[1px] text-[13px]">Remembered:</span>
             <motion.span
               className="font-display font-semibold text-teal"
               key={totalDiscoveries}
@@ -432,7 +480,7 @@ export default function GamePage() {
 
           {/* Depth indicator */}
           <div className="flex items-center gap-2">
-            <span className="text-text-secondary text-sm">Depth:</span>
+            <span className="text-[#94a3b8] uppercase tracking-[1px] text-[13px]">Depth:</span>
             <span className={cn(
               'font-display font-semibold',
               deepestDepth === 'I' && 'text-teal',
@@ -447,7 +495,7 @@ export default function GamePage() {
 
           {/* Token usage - hidden on very small screens */}
           <div className="hidden sm:flex items-center gap-2">
-            <span className="text-text-secondary text-sm">Memory:</span>
+            <span className="text-[#94a3b8] uppercase tracking-[1px] text-[13px]">Memory:</span>
             <span className="font-display font-semibold text-teal">
               {formatTokens(contextTokens)}
             </span>
@@ -457,27 +505,37 @@ export default function GamePage() {
 
       {/* Main content */}
       <div className="flex-1 flex overflow-hidden relative z-10">
-        {/* Sidebar - Apple-style light gray */}
+        {/* Sidebar - Glass panel, fixed position */}
         <AnimatePresence>
           {(isSidebarOpen || !isMobile) && (
             <motion.aside
               className={cn(
-                'w-[280px] shrink-0 border-r border-border',
-                'bg-surface overflow-y-auto',
+                'w-[340px] shrink-0',
+                'glass-panel rounded-[24px] overflow-y-auto',
+                'fixed left-8 top-[90px] bottom-8',
                 'flex flex-col',
-                isMobile && 'absolute inset-y-14 left-0 z-40'
+                isMobile && 'z-40'
               )}
-              initial={{ x: isMobile ? -280 : 0, opacity: isMobile ? 0 : 1 }}
+              initial={{ x: isMobile ? -340 : 0, opacity: isMobile ? 0 : 1 }}
               animate={{ x: 0, opacity: 1 }}
-              exit={{ x: -280, opacity: 0 }}
+              exit={{ x: -340, opacity: 0 }}
               transition={{ type: 'spring', stiffness: 300, damping: 30 }}
             >
               {/* Primordials section */}
               <div className="p-4 border-b border-border">
-                <h2 className="font-display text-sm font-semibold text-text-secondary uppercase tracking-wider mb-3">
+                {/* Search bar */}
+                <div className="mb-4">
+                  <input
+                    type="text"
+                    placeholder="Search the void..."
+                    className="w-full h-10 px-4 bg-black/30 border-none rounded-lg text-text-primary placeholder:text-text-muted text-sm focus:outline-none focus:ring-1 focus:ring-accent-cyan/50"
+                  />
+                </div>
+
+                <h2 className="font-display text-base text-[#cbd5e1] mb-4">
                   Primordials
                 </h2>
-                <div className="grid grid-cols-4 gap-x-3 gap-y-8 pb-6">
+                <div className="grid grid-cols-3 gap-3">
                   {primordials.map((element, index) => (
                     <motion.div
                       key={element.id}
@@ -499,7 +557,7 @@ export default function GamePage() {
 
               {/* Remembered (discovered) section */}
               <div className="p-4 flex-1 overflow-y-auto">
-                <h2 className="font-display text-sm font-semibold text-text-secondary uppercase tracking-wider mb-6">
+                <h2 className="font-display text-base text-[#cbd5e1] mb-4">
                   Remembered
                 </h2>
 
@@ -524,7 +582,7 @@ export default function GamePage() {
                           )}>
                             Depth {depth}
                           </h3>
-                          <div className="grid grid-cols-4 gap-x-2 gap-y-8 pb-10">
+                          <div className="grid grid-cols-3 gap-3">
                             {elementsAtDepth.map((element: Element) => (
                               <ElementCard
                                 key={element.id}
@@ -566,20 +624,20 @@ export default function GamePage() {
           />
         )}
 
-        {/* Main viewport area */}
-        <main className="flex-1 flex flex-col p-4 overflow-hidden bg-white">
+        {/* Main viewport area - offset for fixed sidebar */}
+        <main className="flex-1 flex flex-col p-4 overflow-hidden ml-[372px]">
           {/* Canvas workspace for Infinite Craft style combining */}
           {!currentScene ? (
             <div
               ref={canvasRef}
-              className="flex-1 min-h-0 relative rounded-2xl border-2 border-dashed border-border/50 bg-gradient-to-br from-surface/50 to-white overflow-hidden"
+              className="flex-1 min-h-0 relative rounded-[24px] glass-panel overflow-hidden"
               onDrop={handleCanvasDrop}
               onDragOver={handleCanvasDragOver}
             >
               {/* Empty state message */}
               {canvasElements.length === 0 && (
-                <div className="absolute inset-0 flex flex-col items-center justify-center text-text-muted">
-                  <div className="w-16 h-16 rounded-2xl bg-surface/80 flex items-center justify-center mb-4">
+                <div className="absolute inset-0 flex flex-col items-center justify-center text-text-secondary">
+                  <div className="w-16 h-16 rounded-2xl bg-white/5 flex items-center justify-center mb-4">
                     <span className="text-3xl">✨</span>
                   </div>
                   <p className="font-display text-sm">Drag elements here to combine</p>
@@ -628,7 +686,7 @@ export default function GamePage() {
                   </motion.div>
                   {/* Remove button */}
                   <button
-                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-rose/80 text-white text-xs flex items-center justify-center hover:bg-rose transition-colors shadow-sm z-10"
+                    className="absolute -top-2 -right-2 w-5 h-5 rounded-full bg-accent-error/80 text-white text-xs flex items-center justify-center hover:bg-accent-error transition-colors shadow-sm z-10"
                     onClick={(e) => {
                       e.stopPropagation();
                       handleCanvasElementRemove(canvasEl.id);
@@ -661,9 +719,9 @@ export default function GamePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
           >
-            <div className="px-4 py-2 rounded-full bg-white/95 backdrop-blur-md border border-accent-blue/30 shadow-elevated flex items-center gap-3">
+            <div className="px-4 py-2 rounded-full glass-panel border border-accent-purple/30 flex items-center gap-3">
               <motion.div
-                className="w-4 h-4 border-2 border-accent-blue/30 border-t-accent-blue rounded-full"
+                className="w-4 h-4 border-2 border-accent-purple/30 border-t-accent-purple rounded-full"
                 animate={{ rotate: 360 }}
                 transition={{ repeat: Infinity, duration: 0.8, ease: 'linear' }}
               />
@@ -682,10 +740,10 @@ export default function GamePage() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: 20 }}
           >
-            <div className="px-4 py-3 rounded-xl bg-white/95 backdrop-blur-md border border-rose/30 shadow-elevated flex items-center gap-3 max-w-md">
-              <span className="text-rose text-lg">⚠</span>
+            <div className="px-4 py-3 rounded-xl glass-panel border border-accent-error/30 flex items-center gap-3 max-w-md">
+              <span className="text-accent-error text-lg">⚠</span>
               <div className="flex-1">
-                <p className="text-sm font-display text-rose">Combine Failed</p>
+                <p className="text-sm font-display text-accent-error">Combine Failed</p>
                 <p className="text-xs text-text-secondary mt-0.5">{combineError}</p>
               </div>
               <button
@@ -705,6 +763,7 @@ export default function GamePage() {
           element={revealElement}
           isVisible={isRevealing}
           onComplete={handleRevealComplete}
+          imageUrl={'imageUrl' in revealElement ? revealElement.imageUrl : undefined}
         />
       )}
 

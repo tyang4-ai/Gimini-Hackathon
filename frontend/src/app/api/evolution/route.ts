@@ -1,7 +1,24 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { findElementById, MILESTONES } from '@/lib/elements';
 import { evolutionPrompt } from '@/lib/prompts';
+import { DEMO_MODE } from '@/lib/demoData';
 import type { MilestoneElement } from '@/types';
+
+// Demo evolution video mapping - pre-generated videos for demo recording
+const DEMO_EVOLUTIONS: Record<string, string> = {
+  'energy': '/evolution-videos/energy.mp4',
+  'life': '/evolution-videos/life.mp4',
+  'consciousness': '/evolution-videos/consciousness.mp4',
+  'civilization': '/evolution-videos/civilization.mp4',
+  'wisdom': '/evolution-videos/wisdom.mp4',
+  'transcendence': '/evolution-videos/transcendence.mp4',
+  'chaos': '/evolution-videos/chaos.mp4',
+  'harmony': '/evolution-videos/harmony.mp4',
+  'cosmos': '/evolution-videos/cosmos.mp4',
+};
+
+// Track demo operation names for polling
+const demoOperations = new Map<string, { milestoneId: string; startTime: number }>();
 
 // Response types
 interface EvolutionResponse {
@@ -32,6 +49,17 @@ export async function POST(request: NextRequest): Promise<NextResponse<Evolution
         { success: false, error: 'Missing milestoneId' },
         { status: 400 }
       );
+    }
+
+    // Check for demo mode - return fake operation name immediately
+    if (DEMO_MODE) {
+      const operationName = `demo-operation-${milestoneId}-${Date.now()}`;
+      demoOperations.set(operationName, { milestoneId, startTime: Date.now() });
+      console.log('[DEMO] Starting fake evolution for:', milestoneId);
+      return NextResponse.json({
+        success: true,
+        operationName,
+      });
     }
 
     // Check API key
@@ -184,6 +212,32 @@ export async function GET(request: NextRequest): Promise<NextResponse> {
         { success: false, error: 'Missing operationName parameter' },
         { status: 400 }
       );
+    }
+
+    // Check for demo mode - return fake status with pre-generated video
+    if (DEMO_MODE && operationName.startsWith('demo-operation-')) {
+      const demoOp = demoOperations.get(operationName);
+      if (demoOp) {
+        const elapsed = Date.now() - demoOp.startTime;
+        // Simulate 3 seconds of "generation"
+        if (elapsed < 3000) {
+          return NextResponse.json({
+            success: true,
+            status: 'generating',
+            progress: Math.min(90, Math.floor(elapsed / 30)),
+          });
+        }
+
+        // After 3 seconds, return complete with video URL
+        const videoUrl = DEMO_EVOLUTIONS[demoOp.milestoneId] || '/evolution-videos/default.mp4';
+        console.log('[DEMO] Evolution complete for:', demoOp.milestoneId);
+        demoOperations.delete(operationName); // Cleanup
+        return NextResponse.json({
+          success: true,
+          status: 'complete',
+          videoUrl,
+        });
+      }
     }
 
     const apiKey = process.env.GEMINI_API_KEY;

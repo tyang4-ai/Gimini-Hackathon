@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { GoogleGenerativeAI, SchemaType } from '@google/generative-ai';
 import { zoomPrompt } from '@/lib/prompts';
 import { findElementById } from '@/lib/elements';
+import { DEMO_MODE, getDemoScene, getRandomDemoScene } from '@/lib/demoData';
 import type {
   ZoomRequest,
   ZoomResponse,
@@ -111,6 +112,33 @@ export async function POST(request: NextRequest): Promise<NextResponse<ZoomRespo
         { success: false, error: 'Missing element ID' },
         { status: 400 }
       );
+    }
+
+    // Check for demo mode - return cached scene if available
+    if (DEMO_MODE) {
+      const demoScene = getDemoScene(elementId);
+      if (demoScene) {
+        console.log('[DEMO] Using cached scene for:', elementId);
+        // Add artificial delay to simulate generation
+        await new Promise(resolve => setTimeout(resolve, 800));
+        return NextResponse.json({
+          success: true,
+          scene: demoScene,
+        });
+      }
+      // If no cached scene in demo mode, return a random fallback scene
+      console.log('[DEMO] No cached scene for:', elementId, '- using random fallback');
+      await new Promise(resolve => setTimeout(resolve, 800));
+      const fallbackScene = getRandomDemoScene();
+      // Modify the fallback to match the requested element
+      return NextResponse.json({
+        success: true,
+        scene: {
+          ...fallbackScene,
+          id: `zoom-${elementId}-${Date.now()}`,
+          parentElementId: elementId,
+        },
+      });
     }
 
     // Find the element - or create a synthetic one from scene data

@@ -10,6 +10,7 @@ interface MilestoneRevealProps {
   element: Element; // The milestone element being revealed
   onComplete: () => void; // Called when animation completes
   isVisible: boolean; // Controls visibility
+  imageUrl?: string; // Optional milestone image URL
 }
 
 /**
@@ -26,9 +27,12 @@ export function MilestoneReveal({
   element,
   onComplete,
   isVisible,
+  imageUrl,
 }: MilestoneRevealProps) {
   const [phase, setPhase] = useState<'dim' | 'blur' | 'sharpen' | 'glow'>('dim');
   const [showWhisper, setShowWhisper] = useState(false);
+  const [imageLoaded, setImageLoaded] = useState(false);
+  const [imageFailed, setImageFailed] = useState(false);
 
   // Sound effects
   const play = useSoundEffect();
@@ -38,6 +42,8 @@ export function MilestoneReveal({
       // Reset state when hidden
       setPhase('dim');
       setShowWhisper(false);
+      setImageLoaded(false);
+      setImageFailed(false);
       return;
     }
 
@@ -106,7 +112,7 @@ export function MilestoneReveal({
 
           {/* Content container */}
           <div className="relative z-10 flex flex-col items-center">
-            {/* Subtle shadow pulse effect (behind emoji) */}
+            {/* Subtle shadow pulse effect (behind emoji/image) */}
             {phase === 'glow' && (
               <motion.div
                 className="absolute rounded-full"
@@ -121,8 +127,8 @@ export function MilestoneReveal({
                   ease: 'easeInOut',
                 }}
                 style={{
-                  width: '200px',
-                  height: '200px',
+                  width: '300px',
+                  height: '300px',
                   left: '50%',
                   top: '50%',
                   transform: 'translate(-50%, -50%)',
@@ -131,41 +137,82 @@ export function MilestoneReveal({
               />
             )}
 
-            {/* Emoji container with blur effect */}
-            <motion.div
-              className="relative flex items-center justify-center"
-              initial={{ scale: 0.5, opacity: 0 }}
-              animate={{
-                scale: 1,
-                opacity: 1,
-                filter: `blur(${getBlur()}px)`,
-              }}
-              transition={{
-                scale: {
-                  type: 'spring',
-                  stiffness: 200,
-                  damping: 25,
-                  delay: 0.5,
-                },
-                opacity: {
-                  duration: 1,
-                  delay: 0.5,
-                },
-                filter: {
-                  duration: phase === 'sharpen' ? 4 : 3,
-                  ease: 'easeOut',
-                },
-              }}
-            >
-              {/* Emoji */}
-              <span
-                className="text-[120px] leading-none"
-                role="img"
-                aria-label={element.name}
+            {/* Image container with blur effect - shows if imageUrl provided and loaded */}
+            {imageUrl && !imageFailed && (
+              <motion.div
+                className="relative flex items-center justify-center"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{
+                  scale: imageLoaded ? [1, 1.05, 1] : 0.5,
+                  opacity: imageLoaded ? 1 : 0,
+                  filter: `blur(${getBlur()}px)`,
+                }}
+                transition={{
+                  scale: {
+                    type: 'spring',
+                    stiffness: 200,
+                    damping: 25,
+                    delay: 0.5,
+                  },
+                  opacity: {
+                    duration: 1,
+                    delay: 0.5,
+                  },
+                  filter: {
+                    duration: phase === 'sharpen' ? 4 : 3,
+                    ease: 'easeOut',
+                  },
+                }}
               >
-                {element.emoji}
-              </span>
-            </motion.div>
+                {/* Milestone Image */}
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={imageUrl}
+                  alt={element.name}
+                  className="w-[200px] h-[200px] object-contain rounded-xl"
+                  onLoad={() => setImageLoaded(true)}
+                  onError={() => setImageFailed(true)}
+                />
+              </motion.div>
+            )}
+
+            {/* Emoji container with blur effect - fallback when no image */}
+            {(!imageUrl || imageFailed || !imageLoaded) && (
+              <motion.div
+                className="relative flex items-center justify-center"
+                initial={{ scale: 0.5, opacity: 0 }}
+                animate={{
+                  scale: 1,
+                  opacity: 1,
+                  filter: `blur(${getBlur()}px)`,
+                }}
+                transition={{
+                  scale: {
+                    type: 'spring',
+                    stiffness: 200,
+                    damping: 25,
+                    delay: 0.5,
+                  },
+                  opacity: {
+                    duration: 1,
+                    delay: 0.5,
+                  },
+                  filter: {
+                    duration: phase === 'sharpen' ? 4 : 3,
+                    ease: 'easeOut',
+                  },
+                }}
+              >
+                {/* Emoji */}
+                <span
+                  className="text-[120px] leading-none"
+                  role="img"
+                  aria-label={element.name}
+                >
+                  {element.emoji}
+                </span>
+              </motion.div>
+            )}
 
             {/* Element name */}
             <motion.h2
